@@ -27,7 +27,7 @@
   }
 
   body {
-    @apply bg-sand-50 text-neutral-900 antialiased selection:bg-brand-600 selection:text-white dark:bg-neutral-950 dark:text-neutral-100;
+    @apply bg-sand-50 text-neutral-900 antialiased selection:bg-brand-600 selection:text-white dark:bg-[#0b1016] dark:text-neutral-100;
     font-feature-settings: "ss01", "cv11";
   }
 
@@ -66,20 +66,20 @@
   }
 
   .dark .bg-hero {
-    background-color: #0a0a0a;
+    background-color: #101823;
     background-image: radial-gradient(
         circle at top left,
-        rgba(27, 184, 130, 0.12),
+        rgba(31, 184, 130, 0.18),
         transparent 65%
       ),
       radial-gradient(
         circle at top right,
-        rgba(242, 177, 52, 0.1),
+        rgba(242, 177, 52, 0.16),
         transparent 65%
       ),
       radial-gradient(
         circle at bottom right,
-        rgba(27, 94, 64, 0.08),
+        rgba(17, 120, 90, 0.14),
         transparent 70%
       );
   }
@@ -155,19 +155,19 @@
   }
 
   .dark .african-blob::before {
-    opacity: 0.4;
+    opacity: 0.5;
     background: radial-gradient(
       circle,
-      rgba(50, 214, 159, 0.22) 0%,
+      rgba(50, 214, 159, 0.28) 0%,
       rgba(50, 214, 159, 0) 70%
     );
   }
 
   .dark .african-blob::after {
-    opacity: 0.38;
+    opacity: 0.45;
     background: radial-gradient(
       circle,
-      rgba(242, 177, 52, 0.2) 0%,
+      rgba(242, 177, 52, 0.24) 0%,
       rgba(242, 177, 52, 0) 70%
     );
   }
@@ -199,11 +199,11 @@
   .dark .geometric-border {
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.08) 0%,
+      rgba(31, 184, 130, 0.12) 0%,
       rgba(255, 255, 255, 0) 60%
     );
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 30px 90px -40px rgba(50, 214, 159, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 30px 90px -40px rgba(50, 214, 159, 0.65);
   }
 
   .btn-glow {
@@ -278,7 +278,7 @@
   .dark .card::before {
     background: radial-gradient(
       circle at top,
-      rgba(255, 255, 255, 0.08),
+      rgba(31, 184, 130, 0.12),
       transparent 70%
     );
   }
