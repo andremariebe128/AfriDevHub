@@ -27,7 +27,7 @@
   }
 
   body {
-    @apply bg-sand-50 text-neutral-900 antialiased selection:bg-brand-600 selection:text-white dark:bg-neutral-950 dark:text-neutral-50;
+    @apply bg-sand-50 text-neutral-900 antialiased selection:bg-brand-600 selection:text-white dark:bg-neutral-950 dark:text-neutral-100;
     font-feature-settings: "ss01", "cv11";
   }
 
@@ -69,12 +69,12 @@
     background-color: #0a0a0a;
     background-image: radial-gradient(
         circle at top left,
-        rgba(255, 255, 255, 0.06),
+        rgba(255, 255, 255, 0.04),
         transparent 70%
       ),
       radial-gradient(
         circle at top right,
-        rgba(255, 255, 255, 0.04),
+        rgba(255, 255, 255, 0.03),
         transparent 70%
       );
   }
@@ -150,7 +150,7 @@
   }
 
   .dark .african-blob::before {
-    opacity: 0.12;
+    opacity: 0.05;
     background: radial-gradient(
       circle,
       rgba(255, 255, 255, 0.08) 0%,
@@ -159,7 +159,7 @@
   }
 
   .dark .african-blob::after {
-    opacity: 0.08;
+    opacity: 0.04;
     background: radial-gradient(
       circle,
       rgba(255, 255, 255, 0.06) 0%,
@@ -237,11 +237,11 @@
   }
 
   .btn-ghost {
-    @apply bg-white/80 text-neutral-900 backdrop-blur-sm transition hover:bg-white dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800;
+    @apply bg-white/80 text-neutral-900 backdrop-blur-sm transition hover:bg-white dark:bg-[#111111] dark:text-neutral-50 dark:hover:bg-[#141414];
   }
 
   .btn-outline {
-    @apply border border-neutral-300/80 bg-white/60 backdrop-blur-sm hover:bg-white dark:border-neutral-700/80 dark:bg-neutral-950/70 dark:hover:bg-neutral-900/90;
+    @apply border border-neutral-300/80 bg-white/60 backdrop-blur-sm hover:bg-white dark:border-white/10 dark:bg-neutral-950 dark:hover:bg-[#111111];
   }
 
   .btn-soft {
@@ -249,11 +249,11 @@
   }
 
   .input {
-    @apply w-full rounded-2xl border border-neutral-300/80 bg-white/90 px-3.5 py-2.5 text-sm shadow-sm outline-none ring-0 transition placeholder:text-neutral-500 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:border-neutral-700/80 dark:bg-neutral-900/90 dark:placeholder:text-neutral-400 dark:focus:border-brand-500 dark:focus:bg-neutral-900;
+    @apply w-full rounded-2xl border border-neutral-300/80 bg-white/90 px-3.5 py-2.5 text-sm shadow-sm outline-none ring-0 transition placeholder:text-neutral-500 focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-[#111111] dark:text-neutral-50 dark:placeholder:text-neutral-400 dark:focus:border-brand-500 dark:focus:bg-[#141414];
   }
 
   .card {
-    @apply relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg dark:border-white/10 dark:bg-neutral-950/95 dark:shadow-none;
+    @apply relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg dark:border-white/8 dark:bg-[#111111] dark:shadow-none;
     backdrop-filter: blur(8px) saturate(140%);
     -webkit-backdrop-filter: blur(8px) saturate(140%);
   }
@@ -283,11 +283,11 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50/90 px-2.5 py-0.5 text-xs font-medium text-brand-700 shadow-sm backdrop-blur-sm transition hover:bg-brand-100 dark:border-white/10 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800/80;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50/90 px-2.5 py-0.5 text-xs font-medium text-brand-700 shadow-sm backdrop-blur-sm transition hover:bg-brand-100 dark:border-white/8 dark:bg-[#111111] dark:text-neutral-50 dark:hover:bg-[#141414];
   }
 
   .pill {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/90 px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-sm dark:border-white/15 dark:bg-neutral-900 dark:text-neutral-50;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/80 bg-white/90 px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-sm dark:border-white/8 dark:bg-[#111111] dark:text-neutral-50;
   }
 
   .md {

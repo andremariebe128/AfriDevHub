@@ -24,7 +24,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/60 bg-white/85 backdrop-blur-xl transition dark:border-white/10 dark:bg-neutral-950/80">
+    <header className="sticky top-0 z-20 border-b border-white/60 bg-white/85 backdrop-blur-xl transition dark:border-white/8 dark:bg-neutral-950">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3 sm:px-6">
         <Link
           href="/"

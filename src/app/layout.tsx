@@ -33,7 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <PWARegister />
         <Header />
         <main className="relative mx-auto min-h-[70vh] max-w-6xl px-4 py-8 sm:px-6">{children}</main>
-        <footer className="border-t border-white/60 bg-sand-50/80 py-8 pb-24 text-center text-sm text-neutral-600 backdrop-blur md:pb-8 dark:border-white/10 dark:bg-neutral-950/80 dark:text-neutral-400">
+        <footer className="border-t border-white/60 bg-sand-50/80 py-8 pb-24 text-center text-sm text-neutral-600 backdrop-blur md:pb-8 dark:border-white/8 dark:bg-neutral-950 dark:text-neutral-400">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <p className="text-base font-medium text-neutral-800 dark:text-neutral-100">
               AfriDevHub — La communauté des développeurs africains
