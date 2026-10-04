@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { getT } from '@/lib/i18n-server';
 import AnswerSection from '@/components/AnswerSection';
 import Markdown from '@/components/Markdown';
 import TagChip from '@/components/TagChip';
@@ -18,11 +19,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select('title, body')
     .eq('id', id)
     .maybeSingle();
-  if (!data) return { title: 'Question introuvable' };
+  if (!data) return { title: (await getT()).t('q.nf') };
   return { title: data.title, description: String(data.body).slice(0, 150) };
 }
 
 export default async function QuestionPage({ params }: Props) {
+  const { locale } = await getT();
   const { id } = await params;
   const sb = supabaseServer();
 
@@ -45,12 +47,12 @@ export default async function QuestionPage({ params }: Props) {
     <div>
       <h1 className="text-2xl font-bold leading-snug">{question.title}</h1>
       <p className="mt-2 text-sm text-neutral-500">
-        {authorLine(question.profiles?.username, question.profiles?.country, question.created_at)}
+        {authorLine(question.profiles?.username, question.profiles?.country, question.created_at, locale)}
       </p>
       {question.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {question.tags.map((t) => (
-            <TagChip key={t} tag={t} />
+          {question.tags.map((tg) => (
+            <TagChip key={tg} tag={tg} />
           ))}
         </div>
       )}

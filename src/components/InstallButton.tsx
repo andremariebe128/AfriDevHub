@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useT } from '@/components/I18n';
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -9,6 +10,7 @@ type InstallEvent = Event & {
 
 /** Bouton « Installer l'app » (Android/Chrome) + aide iPhone. */
 export default function InstallButton({ className = 'btn btn-primary' }: { className?: string }) {
+  const { t } = useT();
   const [evt, setEvt] = useState<InstallEvent | null>(null);
   const [installed, setInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -49,13 +51,11 @@ export default function InstallButton({ className = 'btn btn-primary' }: { class
   return (
     <div className="inline-block text-left">
       <button type="button" onClick={install} className={className}>
-        📲 Installer l&apos;app
+        {t('in.btn')}
       </button>
       {showHelp && (
         <p className="mt-2 max-w-xs rounded-xl bg-black/30 p-3 text-xs text-white">
-          {isIOS
-            ? "Sur iPhone : touche le bouton Partager de Safari, puis « Sur l'écran d'accueil »."
-            : "Ouvre le menu de ton navigateur (⋮), puis « Installer l'application » ou « Ajouter à l'écran d'accueil »."}
+          {isIOS ? t('in.ios') : t('in.and')}
         </p>
       )}
     </div>

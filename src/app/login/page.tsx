@@ -2,10 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useT } from '@/components/I18n';
 import { supabaseBrowser } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useT();
   const [signup, setSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,9 +21,9 @@ export default function LoginPage() {
     setError(null);
     setInfo(null);
     if (signup && !/^[a-zA-Z0-9_.-]{3,}$/.test(username.trim())) {
-      return setError('Pseudo : 3 caractères minimum (lettres, chiffres, _ . -).');
+      return setError(t('err.user'));
     }
-    if (password.length < 6) return setError('Mot de passe : 6 caractères minimum.');
+    if (password.length < 6) return setError(t('err.pass'));
     setBusy(true);
     const sb = supabaseBrowser();
     if (signup) {
@@ -32,7 +34,7 @@ export default function LoginPage() {
       });
       setBusy(false);
       if (err) return setError(err.message);
-      if (!data.session) return setInfo('Compte créé. Vérifie ton email pour le confirmer.');
+      if (!data.session) return setInfo(t('login.check'));
     } else {
       const { error: err } = await sb.auth.signInWithPassword({ email: email.trim(), password });
       setBusy(false);
@@ -45,20 +47,20 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-sm">
       <h1 className="text-center text-2xl font-bold text-brand-600">AfriDevHub</h1>
-      <p className="mb-6 mt-1 text-center text-sm text-neutral-500">Apprendre, partager, collaborer.</p>
+      <p className="mb-6 mt-1 text-center text-sm text-neutral-500">{t('login.tag')}</p>
       <form onSubmit={submit} className="card space-y-3">
         {signup && (
-          <input className="input" placeholder="Pseudo" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <input className="input" placeholder={t('login.user')} value={username} onChange={(e) => setUsername(e.target.value)} />
         )}
-        <input className="input" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input className="input" type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        <input className="input" type="email" placeholder={t('login.mail')} value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input className="input" type="password" placeholder={t('login.pass')} value={password} onChange={(e) => setPassword(e.target.value)} required />
         {error && <p className="text-sm text-red-600">{error}</p>}
         {info && <p className="text-sm text-brand-600">{info}</p>}
         <button type="submit" disabled={busy} className="btn btn-primary w-full">
-          {busy ? '…' : signup ? 'Créer mon compte' : 'Se connecter'}
+          {busy ? '…' : signup ? t('login.create') : t('login.in')}
         </button>
         <button type="button" onClick={() => setSignup(!signup)} className="w-full text-center text-sm text-brand-600">
-          {signup ? "J'ai déjà un compte" : "Pas de compte ? S'inscrire"}
+          {signup ? t('login.have') : t('login.none')}
         </button>
       </form>
     </div>

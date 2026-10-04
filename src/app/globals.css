@@ -1,34 +1,40 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand-50: #f0fdf8;
-  --color-brand-100: #d9f9ec;
-  --color-brand-200: #b7f2d9;
-  --color-brand-300: #88e6c0;
-  --color-brand-400: #50d29f;
-  --color-brand-500: #1fb882;
-  --color-brand-600: #0b8f65;
-  --color-brand-700: #0b6e4f;
-  --color-brand-800: #0d5840;
-  --color-brand-900: #0c4735;
-  --color-brand-950: #05291f;
-  --color-gold-50: #fff8ec;
+  --color-brand-50: #eaf3f8;
+  --color-brand-100: #d6e8f2;
+  --color-brand-200: #b3d3e5;
+  --color-brand-300: #7fb2cf;
+  --color-brand-400: #4a8fb5;
+  --color-brand-500: #2a7ba8;
+  --color-brand-600: #1f6e9c;
+  --color-brand-700: #19597e;
+  --color-brand-800: #134660;
+  --color-brand-900: #0f3549;
+  --color-brand-950: #0a2433;
+  --color-gold-50: #fff6e8;
   --color-gold-100: #fff0d3;
-  --color-gold-400: #f2b134;
-  --color-gold-500: #e09b12;
-  --color-sand-50: #f5f7f5;
+  --color-gold-400: #eb9f2f;
+  --color-gold-500: #dc722d;
+  --color-leaf-500: #279160;
+  --color-leaf-600: #1f7a50;
+  --color-sand-50: #eef4f8;
+  --color-teal-500: #288281;
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
   --color-sand-100: #eef2ee;
 }
 
 @layer base {
   html {
+    color-scheme: light;
     scroll-behavior: smooth;
     scroll-padding-top: 5rem;
   }
 
   body {
     @apply bg-sand-50 text-neutral-900 antialiased selection:bg-brand-600 selection:text-white dark:bg-neutral-950 dark:text-neutral-100;
-    font-feature-settings: "ss01", "cv11";
+    
   }
 
   a {
@@ -47,15 +53,15 @@
 
 @layer utilities {
   .bg-hero {
-    background-color: #f5f7f5;
+    background-color: #eef4f8;
     background-image: radial-gradient(
         circle at top left,
-        rgba(11, 110, 79, 0.08),
+        rgba(22, 112, 173, 0.08),
         transparent 65%
       ),
       radial-gradient(
         circle at top right,
-        rgba(242, 177, 52, 0.08),
+        rgba(245, 160, 42, 0.08),
         transparent 65%
       ),
       radial-gradient(
@@ -131,8 +137,8 @@
     left: -10rem;
     background: radial-gradient(
       circle,
-      rgba(11, 110, 79, 0.18) 0%,
-      rgba(11, 110, 79, 0) 70%
+      rgba(22, 112, 173, 0.18) 0%,
+      rgba(22, 112, 173, 0) 70%
     );
   }
 
@@ -143,8 +149,8 @@
     right: -8rem;
     background: radial-gradient(
       circle,
-      rgba(242, 177, 52, 0.16) 0%,
-      rgba(242, 177, 52, 0) 70%
+      rgba(245, 160, 42, 0.16) 0%,
+      rgba(245, 160, 42, 0) 70%
     );
     animation-delay: -4s;
   }
@@ -186,7 +192,7 @@
       rgba(255, 255, 255, 0) 60%
     );
     border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 20px 80px -30px rgba(11, 110, 79, 0.45);
+    box-shadow: 0 20px 80px -30px rgba(22, 112, 173, 0.45);
     backdrop-filter: blur(10px) saturate(140%);
     -webkit-backdrop-filter: blur(10px) saturate(140%);
   }
@@ -198,30 +204,26 @@
       rgba(255, 255, 255, 0) 60%
     );
     border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 30px 90px -40px rgba(50, 214, 159, 0.65);
+    box-shadow: 0 30px 90px -40px rgba(74, 157, 219, 0.65);
   }
 
   .btn-glow {
-    box-shadow: 0 10px 60px -20px rgba(11, 110, 79, 0.9);
+    box-shadow: 0 10px 60px -20px rgba(22, 112, 173, 0.9);
   }
 
   .dark .btn-glow {
-    box-shadow: 0 10px 70px -20px rgba(50, 214, 159, 0.95);
+    box-shadow: 0 10px 70px -20px rgba(74, 157, 219, 0.95);
   }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-neutral-950;
   }
 
   .btn-primary {
-    @apply relative overflow-hidden bg-gradient-to-b from-brand-600 to-brand-700 text-white shadow-sm hover:-translate-y-0.5 hover:from-brand-700 hover:to-brand-800 active:translate-y-0 active:shadow-none;
-    box-shadow: 0 10px 60px -20px rgba(11, 110, 79, 0.9);
-  }
-
-  .dark .btn-primary {
-    box-shadow: 0 10px 70px -20px rgba(50, 214, 159, 0.95);
+    @apply relative overflow-hidden text-white shadow-sm hover:-translate-y-0.5 active:translate-y-0;
+    background-image: linear-gradient(90deg, #1873a1, #288281, #279160);
   }
 
   .btn-primary::after {
@@ -245,7 +247,7 @@
   }
 
   .btn-soft {
-    @apply bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-950/60 dark:text-brand-100 dark:hover:bg-brand-900/80;
+    @apply bg-[#ecf7fa] text-brand-600 hover:bg-brand-100 dark:bg-brand-950/60 dark:text-brand-100 dark:hover:bg-brand-900/80;
   }
 
   .input {
@@ -253,29 +255,7 @@
   }
 
   .card {
-    @apply relative overflow-hidden rounded-3xl border border-white/70 bg-white/95 p-6 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg dark:border-white/8 dark:bg-[#111111] dark:shadow-none;
-    backdrop-filter: blur(8px) saturate(140%);
-    -webkit-backdrop-filter: blur(8px) saturate(140%);
-  }
-
-  .card::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(
-      circle at top,
-      rgba(255, 255, 255, 0.8),
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  .dark .card::before {
-    background: radial-gradient(
-      circle at top,
-      rgba(255, 255, 255, 0.05),
-      transparent 70%
-    );
+    @apply relative rounded-2xl border border-[#e3ecf2] bg-white p-4 shadow-[0_1px_3px_rgba(20,60,90,0.06)];
   }
 
   .card > * {
@@ -283,7 +263,7 @@
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-brand-100 bg-brand-50/90 px-2.5 py-0.5 text-xs font-medium text-brand-700 shadow-sm backdrop-blur-sm transition hover:bg-brand-100 dark:border-white/8 dark:bg-[#111111] dark:text-neutral-50 dark:hover:bg-[#141414];
+    @apply inline-flex items-center gap-1.5 rounded-lg bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 transition;
   }
 
   .pill {
@@ -336,3 +316,32 @@
     @apply my-8 border-t border-neutral-200 dark:border-neutral-800;
   }
 }
+
+/* ---- Identité : bande kente, pouls, mode léger ---- */
+.kente {
+  height: 6px;
+  background: repeating-linear-gradient(90deg, #1873a1 0 24px, #279160 24px 36px, #dc722d 36px 48px, #288281 48px 52px, #eb9f2f 52px 64px);
+}
+.pulse-ring { animation: pulse-ring 1.6s ease-out infinite; }
+@keyframes pulse-ring { from { transform: scale(1); opacity: 0.7; } to { transform: scale(3.2); opacity: 0; } }
+html[data-lite] *, html[data-lite] *::before, html[data-lite] *::after { animation: none !important; transition: none !important; }
+html[data-lite] .african-blob, html[data-lite] .bg-african-grid { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ---- Maquette : tags colorés, bannière à motifs, couvertures ---- */
+.chip.tag-0 { background: #d9ebf7; color: #1b6590; }
+.chip.tag-1 { background: #fbf0c9; color: #6b5513; }
+.chip.tag-2 { background: #fadcd6; color: #9a3f30; }
+.chip.solid-0 { background: #dc722d; color: #fff; }
+.chip.solid-1 { background: #279160; color: #fff; }
+.pattern {
+  background: repeating-linear-gradient(45deg, rgba(235,159,47,.5) 0 5px, transparent 5px 18px),
+    repeating-linear-gradient(-45deg, rgba(39,145,96,.45) 0 5px, transparent 5px 24px),
+    linear-gradient(135deg, #19597e, #288281);
+}
+.cover-0 { background: linear-gradient(135deg, #1873a1, #7fb2cf); }
+.cover-1 { background: linear-gradient(135deg, #dc722d, #eb9f2f); }
+.cover-2 { background: linear-gradient(135deg, #288281, #279160); }
+.cover-3 { background: linear-gradient(135deg, #19597e, #288281); }

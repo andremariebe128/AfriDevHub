@@ -1,56 +1,32 @@
 import type { Metadata } from 'next';
 import AddProjectForm from '@/components/AddProjectForm';
-import TagChip from '@/components/TagChip';
+import ProjectsHub, { type Proj } from '@/components/ProjectsHub';
+import { getT } from '@/lib/i18n-server';
 import { supabaseServer } from '@/lib/supabase';
-import type { ProjectRow } from '@/lib/types';
-import { authorLine } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Projets' };
+export const generateMetadata = async (): Promise<Metadata> => ({ title: (await getT()).t('pj.h') });
 
 export default async function ProjectsPage() {
-  let projects: ProjectRow[] = [];
+  const { t } = await getT();
+  const sb = supabaseServer();
+  let rows: any[] = [];
   try {
-    const { data } = await supabaseServer()
-      .from('projects')
-      .select('*, profiles(username)')
-      .order('created_at', { ascending: false })
-      .limit(50);
-    projects = (data as ProjectRow[]) ?? [];
-  } catch {
-    projects = [];
-  }
-
+    let r = await sb.from('projects').select('*, profiles(username, country), project_ratings(stars)').order('created_at', { ascending: false }).limit(60);
+    if (r.error) r = await sb.from('projects').select('*, profiles(username, country)').order('created_at', { ascending: false }).limit(60);
+    rows = r.data ?? [];
+  } catch { rows = []; }
+  const ok = (u?: string | null) => (u && /^https?:\/\//.test(u) ? u : null);
+  const items: Proj[] = rows.map((p) => {
+    const st: number[] = (p.project_ratings ?? []).map((x: { stars: number }) => x.stars);
+    return { id: p.id, title: p.title, tags: p.tags ?? [], url: ok(p.url), cover: ok(p.cover_url), username: p.profiles?.username ?? null, country: p.profiles?.country ?? null,
+      avg: st.length ? st.reduce((a, b) => a + b, 0) / st.length : 0, count: st.length };
+  });
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold">Projets</h1>
-      <div className="mb-6">
-        <AddProjectForm />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {projects.length === 0 && <p className="text-neutral-500">Aucun projet partagé pour le moment.</p>}
-        {projects.map((p) => (
-          <article key={p.id} className="card flex flex-col">
-            <h3 className="font-semibold">{p.title}</h3>
-            {p.description && <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">{p.description}</p>}
-            {p.tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {p.tags.map((t) => (
-                  <TagChip key={t} tag={t} />
-                ))}
-              </div>
-            )}
-            <div className="mt-auto flex items-center justify-between pt-3 text-xs text-neutral-500">
-              <span>{authorLine(p.profiles?.username, null, p.created_at)}</span>
-              {p.url && (
-                <a href={p.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-brand-600">
-                  Ouvrir ↗
-                </a>
-              )}
-            </div>
-          </article>
-        ))}
-      </div>
+      <h1 className="mb-4 text-2xl font-bold">{t('pj.explore')}</h1>
+      <div className="mb-4"><AddProjectForm /></div>
+      {items.length === 0 ? <p className="text-neutral-500">{t('pj.none')}</p> : <ProjectsHub items={items} />}
     </div>
   );
 }

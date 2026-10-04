@@ -2,40 +2,30 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useT } from '@/components/I18n';
+import { IBell, IChat, ICompass, IHome } from '@/components/Icons';
+import type { Key } from '@/lib/i18n';
 
-const ITEMS = [
-  { href: '/', label: 'Accueil', icon: '🏠' },
-  { href: '/questions', label: 'Questions', icon: '💬' },
-  { href: '/ask', label: 'Poser', icon: '➕' },
-  { href: '/projects', label: 'Projets', icon: '🚀' },
-  { href: '/profile', label: 'Profil', icon: '👤' },
+const ITEMS: { href: string; label: Key; Icon: typeof IHome }[] = [
+  { href: '/', label: 'nav.home', Icon: IHome },
+  { href: '/projects', label: 'nav.explore', Icon: ICompass },
+  { href: '/questions', label: 'nav.chat', Icon: IChat },
+  { href: '/notifications', label: 'nav.bell', Icon: IBell },
 ];
 
-/** Barre de navigation façon app mobile (visible uniquement sur petit écran). */
+/** Barre du bas façon maquette : icônes seules, avatar à droite. */
 export default function BottomNav() {
-  const pathname = usePathname();
+  const path = usePathname();
+  const { t } = useT();
+  const cls = (a: boolean) => `flex items-center justify-center py-3.5 ${a ? 'text-brand-600' : 'text-neutral-500'}`;
   return (
-    <nav
-      aria-label="Navigation principale"
-      className="fixed inset-x-0 bottom-0 z-20 border-t border-neutral-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-neutral-800 dark:bg-neutral-950/95"
-    >
+    <nav aria-label="Navigation mobile" className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e3ecf2] bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
       <ul className="mx-auto flex max-w-md items-stretch justify-around">
-        {ITEMS.map((it) => {
-          const active = it.href === '/' ? pathname === '/' : pathname.startsWith(it.href);
-          return (
-            <li key={it.href} className="flex-1">
-              <Link
-                href={it.href}
-                className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${
-                  active ? 'text-brand-600' : 'text-neutral-500'
-                }`}
-              >
-                <span className="text-lg leading-none">{it.icon}</span>
-                {it.label}
-              </Link>
-            </li>
-          );
-        })}
+        {ITEMS.map(({ href, label, Icon }) => (
+          <li key={href} className="flex-1"><Link href={href} aria-label={t(label)} className={cls(href === '/' ? path === '/' : path.startsWith(href))}><Icon className="h-7 w-7" /></Link></li>
+        ))}
+        <li className="flex-1"><Link href="/profile" aria-label={t('nav.profile')} className={cls(path.startsWith('/profile'))}>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-leaf-500 text-[11px] font-bold text-white">●</span></Link></li>
       </ul>
     </nav>
   );
