@@ -2,11 +2,13 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getT } from '@/lib/i18n-server';
 import AnswerSection from '@/components/AnswerSection';
+import Avatar from '@/components/Avatar';
+import DemoBadge from '@/components/DemoBadge';
+import Flag from '@/components/Flag';
 import Markdown from '@/components/Markdown';
 import TagChip from '@/components/TagChip';
-import { supabaseServer } from '@/lib/supabase';
-import type { AnswerRow, QuestionRow } from '@/lib/types';
-import { authorLine } from '@/lib/utils';
+import { loadQuestion } from '@/lib/data';
+import { plainPreview, timeAgo } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,49 +16,40 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const { data } = await supabaseServer()
-    .from('questions')
-    .select('title, body')
-    .eq('id', id)
-    .maybeSingle();
+  const { data } = await loadQuestion(id);
   if (!data) return { title: (await getT()).t('q.nf') };
-  return { title: data.title, description: String(data.body).slice(0, 150) };
+  return { title: data.question.title, description: plainPreview(data.question.body, 150) };
 }
 
 export default async function QuestionPage({ params }: Props) {
-  const { locale } = await getT();
+  const { locale, t } = await getT();
   const { id } = await params;
-  const sb = supabaseServer();
-
-  const { data: q, error } = await sb
-    .from('questions')
-    .select('*, profiles(username, country)')
-    .eq('id', id)
-    .maybeSingle();
-  if (error || !q) notFound();
-  const question = q as QuestionRow;
-
-  const { data: answers } = await sb
-    .from('answers')
-    .select('*, profiles(username)')
-    .eq('question_id', id)
-    .order('score', { ascending: false })
-    .order('created_at', { ascending: true });
+  const { data, demo } = await loadQuestion(id);
+  if (!data) notFound();
+  const { question, answers } = data;
+  const user = question.profiles?.username;
+  const country = question.profiles?.country;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold leading-snug">{question.title}</h1>
-      <p className="mt-2 text-sm text-neutral-500">
-        {authorLine(question.profiles?.username, question.profiles?.country, question.created_at, locale)}
+    <article className="mx-auto max-w-3xl">
+      {demo && <DemoBadge className="mb-4" />}
+      <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{question.title}</h1>
+      <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
+        <Avatar name={user} size={28} />
+        <span className="font-semibold text-muted">@{user ?? t('anon')}</span>
+        {country && <Flag country={country} className="h-3.5 w-auto" />}
+        {country && <span>{country}</span>}
+        <span aria-hidden="true">·</span>
+        <span>{t('q.asked')} {timeAgo(question.created_at, locale)}</span>
       </p>
       {question.tags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {question.tags.map((tg) => (
             <TagChip key={tg} tag={tg} />
           ))}
         </div>
       )}
-      <div className="card mt-5">
+      <div className="card mt-6">
         <Markdown>{question.body}</Markdown>
       </div>
 
@@ -64,8 +57,9 @@ export default async function QuestionPage({ params }: Props) {
         questionId={question.id}
         questionAuthorId={question.author_id}
         acceptedAnswerId={question.accepted_answer_id}
-        answers={(answers as AnswerRow[]) ?? []}
+        answers={answers}
+        readOnly={demo}
       />
-    </div>
+    </article>
   );
 }
