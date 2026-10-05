@@ -19,14 +19,14 @@ function apply(mode: Mode) {
 export default function ThemeToggle({ variant = 'cycle' }: { variant?: 'cycle' | 'segmented' }) {
   const { t } = useT();
   const sep = t('theme.sep');
-  const [mode, setMode] = useState<Mode>('system');
+  const [mode, setMode] = useState<Mode>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    let saved: Mode = 'system';
+    let saved: Mode = 'light';
     try {
       const v = localStorage.getItem('adh-theme');
-      if (v === 'light' || v === 'dark') saved = v;
+      if (v === 'light' || v === 'dark' || v === 'system') saved = v;
     } catch {}
     setMode(saved);
     apply(saved);
@@ -45,8 +45,7 @@ export default function ThemeToggle({ variant = 'cycle' }: { variant?: 'cycle' |
     setMode(m);
     apply(m);
     try {
-      if (m === 'system') localStorage.removeItem('adh-theme');
-      else localStorage.setItem('adh-theme', m);
+      localStorage.setItem('adh-theme', m);
     } catch {}
   }, []);
 
