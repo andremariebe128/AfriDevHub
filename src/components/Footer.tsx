@@ -73,7 +73,12 @@ export default async function Footer() {
       <div className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-5 text-xs text-subtle sm:px-6">
           <p>© {new Date().getFullYear()} AfriDevHub · {t('foot.rights')}</p>
-          <p className="font-mono">{t('foot.rules')}</p>
+          <nav aria-label={t('foot.legal')} className="flex flex-wrap gap-x-5 gap-y-1">
+            <Link href="/confidentialite" className="hover:text-fg">{t('legal.privacy')}</Link>
+            <Link href="/conditions" className="hover:text-fg">{t('legal.terms')}</Link>
+            <Link href="/mentions-legales" className="hover:text-fg">{t('legal.notice')}</Link>
+          </nav>
+          <p className="w-full font-mono sm:w-auto">{t('foot.rules')}</p>
         </div>
       </div>
     </footer>

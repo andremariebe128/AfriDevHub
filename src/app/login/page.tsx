@@ -126,6 +126,15 @@ export default function LoginPage() {
             {info && <p className="flex items-start gap-2 rounded-md border border-leaf-500/40 bg-leaf-500/10 px-3 py-2 text-sm text-success"><IOk className="mt-0.5 h-4 w-4 shrink-0" />{info}</p>}
           </div>
 
+          {signup && (
+            <p className="text-xs leading-relaxed text-muted">
+              {t('login.consent').split(/({terms}|{privacy})/).map((part, i) =>
+                part === '{terms}' ? <Link key={i} href="/conditions" target="_blank" className="font-medium text-accent-fg underline underline-offset-2">{t('legal.terms')}</Link>
+                : part === '{privacy}' ? <Link key={i} href="/confidentialite" target="_blank" className="font-medium text-accent-fg underline underline-offset-2">{t('legal.privacy')}</Link>
+                : part)}
+            </p>
+          )}
+
           <button type="submit" disabled={busy} aria-busy={busy} className="btn btn-primary w-full">
             {busy ? t('login.busy') : signup ? t('login.create') : t('login.in')}
           </button>
