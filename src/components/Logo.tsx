@@ -1,11 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
-/** Logo officiel (fichiers issus de logo_afridevhub.jpg). */
-export default function Logo({ variant = 'header', height = 40 }: { variant?: 'header' | 'full'; height?: number }) {
-  if (variant === 'full') return <img src="/logo-full.png" alt="AfriDevHub — La communauté des dévs africains" style={{ height, width: 'auto', maxWidth: '100%' }} />;
+/** Logotype AfriDevHub : marque (carte du continent) + mot-symbole en texte (suit le thème clair/sombre). */
+export default function Logo({ height = 36, onDark = false }: { variant?: 'header' | 'full'; height?: number; onDark?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2">
-      <img src="/logo-mark.png" alt="" style={{ height, width: 'auto' }} />
-      <img src="/logo-wordmark.png" alt="AfriDevHub" className="hidden min-[430px]:block" style={{ height: height * 0.42, width: 'auto' }} />
+    <span className="inline-flex items-center gap-2" style={{ lineHeight: 1 }}>
+      <img src="/logo-mark.png" alt="" width={height} height={height} style={{ height, width: 'auto' }} />
+      <span
+        className={`font-display font-extrabold ${onDark ? 'text-white' : 'text-fg'}`}
+        style={{ fontSize: Math.max(height * 0.52, 17), letterSpacing: '-0.03em' }}
+      >
+        Afri<span className={onDark ? 'text-leaf-400' : 'text-leaf-600 dark:text-leaf-400'}>Dev</span>Hub
+      </span>
     </span>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useT } from '@/components/I18n';
+import { IOffline } from '@/components/Icons';
 
-/** Bandeau « Mode Lite » + indicateur hors ligne. */
+/** Bandeau « Mode Lite » + indicateur hors ligne, posé au-dessus de la barre du bas. */
 export default function StatusBar() {
   const { t } = useT();
   const [lite, setLite] = useState(false);
@@ -18,8 +19,8 @@ export default function StatusBar() {
   }, []);
   if (!lite && !off) return null;
   return (
-    <div role="status" className="fixed inset-x-0 bottom-[calc(54px+env(safe-area-inset-bottom))] z-20 bg-[#3f3f3f] px-4 py-2 text-center text-xs text-white md:bottom-0">
-      {off ? `✓ ${t('off.badge')}` : t('lite.banner')}
+    <div role="status" className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-brand-950 px-4 py-2 text-center text-xs font-medium text-white md:bottom-0">
+      {off ? <span className="inline-flex items-center gap-1.5"><IOffline />{t('off.badge')}</span> : t('lite.banner')}
     </div>
   );
 }

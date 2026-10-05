@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useT } from '@/components/I18n';
+import { IDownload } from '@/components/Icons';
 
 type InstallEvent = Event & {
   prompt: () => Promise<void>;
@@ -51,10 +52,10 @@ export default function InstallButton({ className = 'btn btn-primary' }: { class
   return (
     <div className="inline-block text-left">
       <button type="button" onClick={install} className={className}>
-        {t('in.btn')}
+        <IDownload />{t('in.btn')}
       </button>
       {showHelp && (
-        <p className="mt-2 max-w-xs rounded-xl bg-black/30 p-3 text-xs text-white">
+        <p role="status" className="mt-2 max-w-xs rounded-md border border-line bg-surface p-3 text-xs leading-relaxed text-muted shadow-card">
           {isIOS ? t('in.ios') : t('in.and')}
         </p>
       )}

@@ -8,6 +8,8 @@ export type QuestionRow = {
   created_at: string;
   profiles: { username: string; country: string | null } | null;
   answers?: { count: number }[];
+  votes?: number;
+  views?: number;
 };
 
 export type AnswerRow = {
@@ -28,3 +30,34 @@ export type ProjectRow = {
   created_at: string;
   profiles: { username: string } | null;
 };
+
+export type ProfileRow = {
+  id: string;
+  username: string;
+  full_name: string | null;
+  country: string | null;
+  headline: string | null;
+  bio: string | null;
+  stack: string[];
+  languages: string[];
+  years_exp: number | null;
+  open_to: string[];
+  github_url: string | null;
+  website_url: string | null;
+};
+
+/** Projet prêt à afficher (lecture), qu'il vienne de Supabase ou des données de démonstration. */
+export type ProjectItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string | null;
+  cover: string | null;
+  tags: string[];
+  username: string | null;
+  country: string | null;
+  avg: number;
+  count: number;
+};
+
+export type Loaded<T> = { data: T; demo: boolean };

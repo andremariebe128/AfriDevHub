@@ -1,22 +1,23 @@
 import type { Metadata, Viewport } from 'next';
 import BottomNav from '@/components/BottomNav';
+import Footer from '@/components/Footer';
 import Header from '@/components/Header';
-import Fab from '@/components/Fab';
+import MainShell from '@/components/MainShell';
 import PWARegister from '@/components/PWARegister';
 import StatusBar from '@/components/StatusBar';
+import ThemeScript from '@/components/ThemeScript';
 import { I18nProvider } from '@/components/I18n';
 import { getT } from '@/lib/i18n-server';
-import '@fontsource/poppins/400.css';
-import '@fontsource/poppins/500.css';
-import '@fontsource/poppins/600.css';
-import '@fontsource/poppins/700.css';
-import '@fontsource/poppins/800.css';
+import '@fontsource-variable/bricolage-grotesque/index.css';
+import '@fontsource-variable/instrument-sans/index.css';
+import '@fontsource-variable/jetbrains-mono/index.css';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: { default: 'AfriDevHub - la communauté des développeurs africains', template: '%s | AfriDevHub' },
-  description:
-    "AfriDevHub est la plateforme d'échange des développeurs africains : questions/réponses, projets, mentorat et opportunités.",
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getT();
+  return {
+  title: { default: t('meta.title'), template: '%s | AfriDevHub' },
+  description: t('meta.desc'),
   applicationName: 'AfriDevHub',
   appleWebApp: { capable: true, title: 'AfriDevHub', statusBarStyle: 'black-translucent' },
   icons: {
@@ -26,40 +27,37 @@ export const metadata: Metadata = {
     ],
     apple: '/icons/apple-touch-icon.png',
   },
-};
+  };
+}
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#1f6e9c',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f5f4ef' },
+    { media: '(prefers-color-scheme: dark)', color: '#060d13' },
+  ],
   viewportFit: 'cover',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { locale, t } = await getT();
   return (
-    <html lang={locale}>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
         <I18nProvider locale={locale}>
-        <PWARegister />
-        <Header />
-        <main className="relative mx-auto min-h-[70vh] max-w-6xl px-4 py-8 sm:px-6">{children}</main>
-        <footer className="border-t border-white/60 bg-sand-50/80 py-8 pb-44 text-center md:pb-8 text-sm text-neutral-600 backdrop-blur md:pb-8 dark:border-white/8 dark:bg-neutral-950 dark:text-neutral-400">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <p className="text-base font-medium text-neutral-800 dark:text-neutral-100">
-              {t('foot.tag')}
-            </p>
-            <p className="mt-2 text-pretty">
-              {t('foot.sub')}
-            </p>
-            <p className="mt-4">
-              © {new Date().getFullYear()} AfriDevHub · {t('foot.rights')}
-            </p>
-          </div>
-        </footer>
-        <Fab />
-        <StatusBar />
-        <BottomNav />
+          <a href="#main" className="sr-only z-50 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+            {t('a.skip')}
+          </a>
+          <PWARegister />
+          <Header />
+          <MainShell>{children}</MainShell>
+          <Footer />
+          <StatusBar />
+          <BottomNav />
         </I18nProvider>
       </body>
     </html>

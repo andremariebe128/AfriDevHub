@@ -7,6 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase';
 import { authorLine } from '@/lib/utils';
 import type { AnswerRow } from '@/lib/types';
 import { useT } from '@/components/I18n';
+import { IDown, ISolved, IUp } from '@/components/Icons';
 import Markdown from './Markdown';
 
 type Props = {
@@ -14,11 +15,13 @@ type Props = {
   questionAuthorId: string;
   acceptedAnswerId: string | null;
   answers: AnswerRow[];
+  /** Données de démonstration : lecture seule (aucune écriture possible). */
+  readOnly?: boolean;
 };
 
 type Result = { error: { message: string } | null };
 
-export default function AnswerSection({ questionId, questionAuthorId, acceptedAnswerId, answers }: Props) {
+export default function AnswerSection({ questionId, questionAuthorId, acceptedAnswerId, answers, readOnly = false }: Props) {
   const router = useRouter();
   const { t, locale } = useT();
   const [userId, setUserId] = useState<string | null>(null);
@@ -78,7 +81,7 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
 
   return (
     <section className="mt-8">
-      <h2 className="text-lg font-semibold">
+      <h2 className="text-xl font-bold">
         {answers.length} {answers.length > 1 ? t('c.ansn') : t('c.ans1')}
       </h2>
 
@@ -91,29 +94,29 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
           return (
             <div
               key={a.id}
-              className={`card flex gap-3 ${isAccepted ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-900/30' : ''}`}
+              className={`card flex gap-3 ${isAccepted ? 'border-leaf-500/50 bg-leaf-500/[0.06]' : ''}`}
             >
               <div className="flex flex-col items-center text-neutral-500">
                 <button
                   aria-label={t('an.up')}
-                  disabled={!userId || busy}
+                  disabled={!userId || busy || readOnly}
                   onClick={() => vote(a.id, 1)}
-                  className="px-2 hover:text-brand-600 disabled:opacity-40"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-2 hover:text-accent-fg disabled:opacity-40 disabled:hover:bg-transparent"
                 >
-                  ▲
+                  <IUp className="h-6 w-6" />
                 </button>
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">{a.score}</span>
+                <span className="font-display text-lg font-bold text-fg">{a.score}</span>
                 <button
                   aria-label={t('an.down')}
-                  disabled={!userId || busy}
+                  disabled={!userId || busy || readOnly}
                   onClick={() => vote(a.id, -1)}
-                  className="px-2 hover:text-red-600 disabled:opacity-40"
+                  className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-2 hover:text-red-600 disabled:opacity-40 disabled:hover:bg-transparent"
                 >
-                  ▼
+                  <IDown className="h-6 w-6" />
                 </button>
               </div>
               <div className="min-w-0 flex-1">
-                {isAccepted && <p className="mb-1 text-sm font-semibold text-brand-600">{t('an.accepted')}</p>}
+                {isAccepted && <p className="mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-success"><ISolved />{t('an.accepted')}</p>}
                 <Markdown>{a.body}</Markdown>
                 <p className="mt-2 text-xs text-neutral-500">{authorLine(a.profiles?.username, null, a.created_at, locale)}</p>
                 {isQuestionAuthor && !isAccepted && (
@@ -129,13 +132,17 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
 
       <div className="mt-6">
         <h3 className="mb-2 font-semibold">{t('an.your')}</h3>
-        {!ready ? null : !userId ? (
+        {readOnly ? (
+          <p className="rounded-md border border-gold-400/40 bg-gold-400/10 p-3.5 text-sm text-muted">{t("q.demo.reply")}</p>
+        ) : !ready ? null : !userId ? (
           <p className="text-sm">
-            <Link href="/login" className="font-semibold text-brand-600 underline">{t('lnk.login')}</Link>{t('lnk.ans')}
+            <Link href="/login" className="font-semibold text-accent-fg underline">{t('lnk.login')}</Link>{t('lnk.ans')}
           </p>
         ) : (
           <form onSubmit={submit} className="space-y-3">
+            <label htmlFor="answer-body" className="sr-only">{t("an.your")}</label>
             <textarea
+              id="answer-body"
               className="input min-h-32"
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -146,7 +153,7 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
             </button>
           </form>
         )}
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>}
       </div>
     </section>
   );
