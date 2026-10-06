@@ -1,5 +1,5 @@
 import { BJ, CD, CI, CM, EG, GH, KE, MA, NG, RW, SN, ZA } from 'country-flag-icons/react/3x2';
-import { COUNTRY_CODES } from '@/lib/seed';
+import { COUNTRY_CODES } from '@/lib/countries';
 
 const FLAGS = { BJ, CD, CI, CM, EG, GH, KE, MA, NG, RW, SN, ZA };
 

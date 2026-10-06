@@ -1,14 +1,13 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { getT } from '@/lib/i18n-server';
-import DemoBadge from '@/components/DemoBadge';
 import EmptyState from '@/components/EmptyState';
 import QACard from '@/components/QACard';
 import QuestionTabs from '@/components/QuestionTabs';
 import Flag from '@/components/Flag';
 import { IArrow, IDown, ISearch } from '@/components/Icons';
 import { loadQuestions, type Sort } from '@/lib/data';
-import { COUNTRY_CODES } from '@/lib/seed';
+import { COUNTRY_CODES } from '@/lib/countries';
 import { POPULAR_TAGS } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +29,7 @@ export default async function QuestionsPage({ searchParams }: Props) {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{tr('q.forum')}</h1>
-          {demo && <DemoBadge className="mt-3" />}
+          
         </div>
         <div className="flex items-center gap-2">
           <Link href="/ask" className="btn btn-primary btn-sm hidden md:inline-flex">{tr('q.new')}<IArrow /></Link>

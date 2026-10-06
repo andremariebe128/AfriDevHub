@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { getT } from '@/lib/i18n-server';
 import AnswerSection from '@/components/AnswerSection';
 import Avatar from '@/components/Avatar';
-import DemoBadge from '@/components/DemoBadge';
 import Flag from '@/components/Flag';
 import Markdown from '@/components/Markdown';
 import TagChip from '@/components/TagChip';
@@ -32,7 +31,7 @@ export default async function QuestionPage({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl">
-      {demo && <DemoBadge className="mb-4" />}
+      
       <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{question.title}</h1>
       <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
         <Avatar name={user} size={28} />

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Avatar from '@/components/Avatar';
-import DemoBadge from '@/components/DemoBadge';
 import EmptyState from '@/components/EmptyState';
 import Flag from '@/components/Flag';
 import { IExternal, ILang } from '@/components/Icons';
@@ -50,7 +49,7 @@ export default async function PublicProfile({ params }: Props) {
             {(p.open_to ?? []).map((o: string) => OPEN[o] && <span key={o} className="badge">{t(OPEN[o])}</span>)}
             {safe(p.github_url) && <a className="chip tap" href={safe(p.github_url)!} target="_blank" rel="noopener noreferrer">GitHub <IExternal className="h-3.5 w-3.5" /></a>}
             {safe(p.website_url) && <a className="chip tap" href={safe(p.website_url)!} target="_blank" rel="noopener noreferrer">Web <IExternal className="h-3.5 w-3.5" /></a>}
-            {demo && <DemoBadge />}
+            
           </div>
           <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-line pt-3">
             {[[rep, t('u.rep')], [questions.length, t('u.q')], [projects.length, t('u.pj')]].map(([n, label]) => (

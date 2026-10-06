@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import DataSaver from '@/components/DataSaver';
-import InstallButton from '@/components/InstallButton';
 import { IOffline, IPhone, IZap } from '@/components/Icons';
 import LangSwitch from '@/components/LangSwitch';
 import Logo from '@/components/Logo';
@@ -54,7 +53,7 @@ export default async function Footer() {
             <li className="flex items-start gap-2"><IOffline className="mt-0.5 h-4 w-4 shrink-0 text-success" />{t('off.badge')}</li>
           </ul>
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <InstallButton className="btn btn-secondary btn-sm" />
+            <Link href="/download" className="btn btn-secondary btn-sm">{t('dl.cta')}</Link>
             <DataSaver />
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">

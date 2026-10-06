@@ -8,7 +8,7 @@ import { Field, TagInput } from '@/components/Field';
 import FormSkeleton from '@/components/FormSkeleton';
 import { useT } from '@/components/I18n';
 import { IAlert, IArrow, ILogout, IOk } from '@/components/Icons';
-import { COUNTRIES } from '@/lib/seed';
+import { COUNTRIES } from '@/lib/countries';
 import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 import { parseTags } from '@/lib/utils';

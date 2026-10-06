@@ -1,6 +1,6 @@
 'use client';
 import { useMemo, useState } from 'react';
-import type { Item } from '@/lib/seed';
+import type { Item } from '@/lib/types';
 import { useT } from '@/components/I18n';
 import ListingRow from '@/components/ListingRow';
 import { oppKind } from '@/lib/utils';

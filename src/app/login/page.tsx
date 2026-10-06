@@ -54,7 +54,7 @@ export default function LoginPage() {
       const { data, error: err } = await sb.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { username: username.trim() } },
+        options: { data: { username: username.trim() }, emailRedirectTo: `${window.location.origin}/login` },
       });
       setBusy(false);
       if (err) return setError(friendlyError(err.message, t));
@@ -64,7 +64,8 @@ export default function LoginPage() {
       setBusy(false);
       if (err) return setError(friendlyError(err.message, t));
     }
-    router.push('/questions');
+    const nx = new URLSearchParams(window.location.search).get('next');
+    router.push(nx && nx.startsWith('/') && !nx.startsWith('//') ? nx : '/questions');
     router.refresh();
   }
 

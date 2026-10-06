@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Flag from '@/components/Flag';
 import { useT } from '@/components/I18n';
-import { COUNTRIES } from '@/lib/seed';
+import { COUNTRIES } from '@/lib/countries';
 import { countryName } from '@/lib/utils';
 
 /** Espaces par pays : grille de drapeaux (vrais SVG) vers les espaces. */

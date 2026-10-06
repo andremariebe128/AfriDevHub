@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
-import DemoBadge from '@/components/DemoBadge';
 import EmptyState from '@/components/EmptyState';
 import Flag from '@/components/Flag';
 import { IArrow, IGlobe, ISearch } from '@/components/Icons';
@@ -9,7 +8,7 @@ import QACard from '@/components/QACard';
 import QuestionTabs from '@/components/QuestionTabs';
 import { loadContributors, loadQuestions, loadStats, type Sort } from '@/lib/data';
 import { getT } from '@/lib/i18n-server';
-import { OPPS } from '@/lib/seed';
+import { loadItems } from '@/lib/data';
 import { POPULAR_TAGS, countryName, oppKind } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +19,7 @@ const sideHead = 'text-xs font-semibold uppercase tracking-wide text-subtle';
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
   const { sort: rawSort } = await searchParams;
   const sort: Sort = rawSort === 'unanswered' || rawSort === 'top' ? rawSort : 'new';
-  const [{ t, locale }, questions, stats, top] = await Promise.all([getT(), loadQuestions({ limit: 10, sort }), loadStats(), loadContributors(5)]);
+  const [{ t, locale }, questions, stats, top, opps] = await Promise.all([getT(), loadQuestions({ limit: 10, sort }), loadStats(), loadContributors(5), loadItems('opportunity')]);
   const nf = new Intl.NumberFormat(locale);
   const demo = questions.demo || stats.demo;
   const s = stats.data;
@@ -58,7 +57,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 <dt className="text-sm text-subtle">{label}</dt>
               </div>
             ))}
-            {demo && <DemoBadge className="sm:ml-auto" />}
+            
           </dl>
         </div>
       </section>
@@ -112,7 +111,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <section>
             <h3 className={sideHead}>{t('side.opps')}</h3>
             <ul className="mt-1 divide-y divide-line border-y border-line">
-              {OPPS.slice(0, 3).map((o) => (
+              {opps.slice(0, 3).map((o) => (
                 <li key={o.title}>
                   <Link href="/opportunites" className="block py-2.5 hover:text-accent-fg">
                     <span className="text-xs text-subtle">{oppKind(o.kind, locale)}</span>

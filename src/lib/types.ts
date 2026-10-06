@@ -60,4 +60,8 @@ export type ProjectItem = {
   count: number;
 };
 
-export type Loaded<T> = { data: T; demo: boolean };
+export type Loaded<T> = { data: T; demo: false; error?: boolean };
+
+/** Ligne d'annuaire (espaces, opportunités, mentors). */
+export type Item = { title: string; meta: string; kind: string; tags: string[]; text: string; author?: string; en?: { text: string }; flag?: string; members?: number; weekly?: number; href?: string };
+

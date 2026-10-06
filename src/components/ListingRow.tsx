@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Flag from '@/components/Flag';
 import { countryName, oppKind } from '@/lib/utils';
-import type { Item } from '@/lib/seed';
+import type { Item } from '@/lib/types';
 import type { Locale } from '@/lib/i18n';
 
 type Labels = { members: string; weekly: string };
@@ -13,7 +13,7 @@ export default function ListingRow({ i, locale, labels }: { i: Item; locale: Loc
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
         <h3 className="flex items-center gap-2 text-base font-semibold">
           {i.flag && <Flag country={i.flag} className="h-4 w-auto" />}
-          {i.flag ? countryName(i.flag, locale) : i.title}
+          {i.href ? <Link href={i.href} className="hover:text-accent-fg hover:underline">{i.flag ? countryName(i.flag, locale) : i.title}</Link> : (i.flag ? countryName(i.flag, locale) : i.title)}
         </h3>
         {!i.flag && i.kind && <span className="badge">{oppKind(i.kind, locale)}</span>}
       </div>
