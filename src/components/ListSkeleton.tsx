@@ -1,8 +1,11 @@
+import { getT } from '@/lib/i18n-server';
+
 /** Squelette de liste (états de chargement des pages de listes). */
-export default function ListSkeleton() {
+export default async function ListSkeleton() {
+  const { t } = await getT();
   return (
     <div className="space-y-3" role="status" aria-busy="true">
-      <span className="sr-only">…</span>
+      <span className="sr-only">{t('ui.loading')}</span>
       <div className="skeleton h-8 w-56" />
       <div className="overflow-hidden rounded-lg border border-line bg-surface">
         {[0, 1, 2, 3, 4].map((i) => (

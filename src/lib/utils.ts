@@ -1,10 +1,21 @@
 import { DICT, type Locale } from '@/lib/i18n';
 
-const COUNTRY_EN: Record<string, string> = { 'Bénin': 'Benin', 'Sénégal': 'Senegal', 'Côte d’Ivoire': 'Ivory Coast', 'Cameroun': 'Cameroon', 'Maroc': 'Morocco', 'Égypte': 'Egypt', 'Afrique du Sud': 'South Africa', 'RD Congo': 'DR Congo' };
-const KIND_EN: Record<string, string> = { Stage: 'Internship', 'Événement': 'Event', Pays: 'Country', Techno: 'Tech', Mentor: 'Mentor', Collab: 'Collab' };
+import { ALL_COUNTRIES, countryLabel, findCountry } from '@/lib/countries';
+
+export const CHALLENGE_KIND = 'Défi / Concours';
+const KIND_EN: Record<string, string> = { Stage: 'Internship', 'Événement': 'Event', Pays: 'Country', Techno: 'Tech', Mentor: 'Mentor', Collab: 'Collab', [CHALLENGE_KIND]: 'Challenge / Contest' };
 /** Nom de pays affiché dans la langue courante (les données stockent le nom français). */
-export const countryName = (c: string, locale: Locale) => (locale === 'en' ? COUNTRY_EN[c] ?? c : c);
+export const countryName = (c: string, locale: Locale) => {
+  if (c === ALL_COUNTRIES) return DICT[locale]['ctry.all'];
+  const f = findCountry(c);
+  return f ? countryLabel(f, locale) : c;
+};
 export const oppKind = (k: string, locale: Locale) => (locale === 'en' ? KIND_EN[k] ?? k : k);
+/** Lien http(s) valide, sinon null (jamais de javascript:, data:, etc.). */
+export function safeUrl(u?: string | null): string | null {
+  if (!u) return null;
+  try { const x = new URL(u.trim()); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch { return null; }
+}
 export const compact = (n: number) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/.0$/, '') + 'k' : String(n));
 
 export const POPULAR_TAGS = [

@@ -7,6 +7,7 @@ import { supabaseBrowser } from '@/lib/supabase';
 import { authorLine } from '@/lib/utils';
 import type { AnswerRow } from '@/lib/types';
 import { useT } from '@/components/I18n';
+import Avatar from '@/components/Avatar';
 import { IDown, ISolved, IUp } from '@/components/Icons';
 import Markdown from './Markdown';
 
@@ -15,13 +16,11 @@ type Props = {
   questionAuthorId: string;
   acceptedAnswerId: string | null;
   answers: AnswerRow[];
-  /** Données de démonstration : lecture seule (aucune écriture possible). */
-  readOnly?: boolean;
 };
 
 type Result = { error: { message: string } | null };
 
-export default function AnswerSection({ questionId, questionAuthorId, acceptedAnswerId, answers, readOnly = false }: Props) {
+export default function AnswerSection({ questionId, questionAuthorId, acceptedAnswerId, answers }: Props) {
   const router = useRouter();
   const { t, locale } = useT();
   const [userId, setUserId] = useState<string | null>(null);
@@ -99,7 +98,7 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
               <div className="flex flex-col items-center text-neutral-500">
                 <button
                   aria-label={t('an.up')}
-                  disabled={!userId || busy || readOnly}
+                  disabled={!userId || busy}
                   onClick={() => vote(a.id, 1)}
                   className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-2 hover:text-accent-fg disabled:opacity-40 disabled:hover:bg-transparent"
                 >
@@ -108,7 +107,7 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
                 <span className="font-display text-lg font-bold text-fg">{a.score}</span>
                 <button
                   aria-label={t('an.down')}
-                  disabled={!userId || busy || readOnly}
+                  disabled={!userId || busy}
                   onClick={() => vote(a.id, -1)}
                   className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-surface-2 hover:text-red-600 disabled:opacity-40 disabled:hover:bg-transparent"
                 >
@@ -118,7 +117,12 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
               <div className="min-w-0 flex-1">
                 {isAccepted && <p className="mb-1 inline-flex items-center gap-1.5 text-sm font-semibold text-success"><ISolved />{t('an.accepted')}</p>}
                 <Markdown>{a.body}</Markdown>
-                <p className="mt-2 text-xs text-neutral-500">{authorLine(a.profiles?.username, null, a.created_at, locale)}</p>
+                <p className="mt-2 flex items-center gap-1.5 text-xs text-neutral-500">
+                  {a.profiles?.username && <Avatar name={a.profiles.username} src={a.profiles.avatar_url} size={20} className="!ring-0" />}
+                  {a.profiles?.username ? (
+                    <Link href={`/u/${encodeURIComponent(a.profiles.username)}`} className="hover:text-accent-fg">{authorLine(a.profiles.username, null, a.created_at, locale)}</Link>
+                  ) : authorLine(null, null, a.created_at, locale)}
+                </p>
                 {isQuestionAuthor && !isAccepted && (
                   <button onClick={() => accept(a.id)} disabled={busy} className="btn btn-outline mt-2 !py-1 !text-xs">
                     {t('an.accept')}
@@ -132,9 +136,7 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
 
       <div className="mt-6">
         <h3 className="mb-2 font-semibold">{t('an.your')}</h3>
-        {readOnly ? (
-          <p className="rounded-md border border-gold-400/40 bg-gold-400/10 p-3.5 text-sm text-muted">{t("q.demo.reply")}</p>
-        ) : !ready ? null : !userId ? (
+        {!ready ? null : !userId ? (
           <p className="text-sm">
             <Link href="/login" className="font-semibold text-accent-fg underline">{t('lnk.login')}</Link>{t('lnk.ans')}
           </p>

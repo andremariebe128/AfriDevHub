@@ -7,7 +7,7 @@ import { useT } from '@/components/I18n';
 import { supabaseBrowser } from '@/lib/supabase';
 import { parseTags } from '@/lib/utils';
 
-export default function AddProjectForm() {
+export default function AddProjectForm({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const router = useRouter();
   const { t } = useT();
   const [userId, setUserId] = useState<string | null>(null);
@@ -54,7 +54,7 @@ export default function AddProjectForm() {
   }
 
   return (
-    <details className="card">
+    <details id="add-project" className="card" open={defaultOpen || undefined}>
       <summary className="cursor-pointer font-semibold text-brand-600">{t('pj.add')}</summary>
       <form onSubmit={submit} className="mt-4 space-y-3">
         <input className="input" placeholder={t('ask.title')} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />

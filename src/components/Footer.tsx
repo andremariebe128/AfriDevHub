@@ -77,7 +77,6 @@ export default async function Footer() {
             <Link href="/conditions" className="hover:text-fg">{t('legal.terms')}</Link>
             <Link href="/mentions-legales" className="hover:text-fg">{t('legal.notice')}</Link>
           </nav>
-          <p className="w-full font-mono sm:w-auto">{t('foot.rules')}</p>
         </div>
       </div>
     </footer>

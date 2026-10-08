@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Avatar from '@/components/Avatar';
 import Flag from '@/components/Flag';
 import TagChip from '@/components/TagChip';
 import { ISolved } from '@/components/Icons';
@@ -32,7 +33,7 @@ export default async function QACard({ q, excerpt = false }: { q: QuestionRow; e
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <div className="flex flex-wrap gap-1.5">{q.tags.map((tg) => <TagChip key={tg} tag={tg} />)}</div>
           <p className="ml-auto flex flex-wrap items-center gap-x-1.5 text-xs text-subtle">
-            {q.profiles?.username ? <Link href={`/u/${encodeURIComponent(q.profiles.username)}`} className="tap font-medium text-muted hover:text-accent-fg">@{q.profiles.username}</Link> : <span>@{t('anon')}</span>}
+            {q.profiles?.username ? <Link href={`/u/${encodeURIComponent(q.profiles.username)}`} className="tap inline-flex items-center gap-1.5 font-medium text-muted hover:text-accent-fg"><Avatar name={q.profiles.username} src={q.profiles.avatar_url} size={20} className="!ring-0" />@{q.profiles.username}</Link> : <span>@{t('anon')}</span>}
             {country && <Flag country={country} className="h-3 w-auto" />}
             {country && <span className="hidden sm:inline">{countryName(country, locale)}</span>}
             <span aria-hidden="true">·</span>

@@ -13,8 +13,8 @@ export default async function Page() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3"><h1 className="text-2xl font-bold">{t('me.h')}</h1></div>
       <p className="max-w-2xl text-neutral-700 dark:text-neutral-300">{t('me.p')}</p>
-      <Link href="/publier" className="btn btn-primary">{t('h.pub')}</Link>
-      <Directory items={items} />
+      {items.length > 0 && <Link href="/publier" className="btn btn-primary">{t('h.pub')}</Link>}
+      <Directory items={items} empty={{ title: t('me.empty.h'), text: t('me.empty.p'), href: '/publier', cta: t('h.pub') }} />
     </div>
   );
 }

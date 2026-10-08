@@ -6,9 +6,8 @@ import QACard from '@/components/QACard';
 import QuestionTabs from '@/components/QuestionTabs';
 import Flag from '@/components/Flag';
 import { IArrow, IDown, ISearch } from '@/components/Icons';
-import { loadQuestions, type Sort } from '@/lib/data';
-import { COUNTRY_CODES } from '@/lib/countries';
-import { POPULAR_TAGS } from '@/lib/utils';
+import { loadPopularTags, loadQuestions, type Sort } from '@/lib/data';
+import { AFRICA } from '@/lib/countries';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +16,11 @@ type Props = { searchParams: Promise<{ q?: string; tag?: string; sort?: string }
 export const generateMetadata = async (): Promise<Metadata> => ({ title: (await getT()).t('q.h') });
 
 export default async function QuestionsPage({ searchParams }: Props) {
-  const { t: tr } = await getT();
+  const { t: tr, locale } = await getT();
   const { q = '', tag, sort: rawSort } = await searchParams;
   const sort: Sort = rawSort === 'unanswered' || rawSort === 'top' ? rawSort : 'new';
-  const { data: questions, demo } = await loadQuestions({ q, tag, limit: 50, sort });
+  const [{ data: questions }, popularRaw] = await Promise.all([loadQuestions({ q, tag, limit: 50, sort }), loadPopularTags(10)]);
+  const popular = tag && !popularRaw.includes(tag) ? [tag, ...popularRaw] : popularRaw;
   const extra = [q.trim() ? 'q=' + encodeURIComponent(q.trim()) : '', tag ? 'tag=' + encodeURIComponent(tag) : ''].filter(Boolean).join('&');
   const filtered = Boolean(q.trim() || tag);
 
@@ -35,16 +35,20 @@ export default async function QuestionsPage({ searchParams }: Props) {
           <Link href="/ask" className="btn btn-primary btn-sm hidden md:inline-flex">{tr('q.new')}<IArrow /></Link>
           <details className="relative">
             <summary className="btn btn-secondary btn-sm cursor-pointer list-none">{tr('q.spaces')} <IDown className="h-4 w-4" /></summary>
-            <div className="absolute right-0 z-10 mt-2 w-64 rounded-lg border border-line bg-raised p-3 shadow-card">
-              <ul className="grid grid-cols-4 gap-2">
-                {Object.keys(COUNTRY_CODES).map((c) => (
-                  <li key={c}>
-                    <Link href={`/espaces?pays=${encodeURIComponent(c)}`} title={c} aria-label={c} className="flex min-h-11 items-center justify-center rounded-lg hover:bg-surface-2">
-                      <Flag country={c} className="h-5 w-auto" />
-                    </Link>
-                  </li>
-                ))}
+            <div className="absolute right-0 z-10 mt-2 max-h-80 w-72 overflow-y-auto rounded-lg border border-line bg-raised p-3 shadow-float">
+              <ul className="grid grid-cols-5 gap-1.5">
+                {AFRICA.map((c) => {
+                  const name = locale === 'en' ? c.en : c.fr;
+                  return (
+                    <li key={c.code}>
+                      <Link href={`/espaces/${c.slug}`} title={name} aria-label={name} className="flex min-h-11 items-center justify-center rounded-lg hover:bg-surface-2">
+                        <Flag country={c.fr} className="h-5 w-auto" />
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
+              <Link href="/espaces" className="mt-2 inline-flex min-h-11 items-center gap-1 text-sm font-medium text-accent-fg hover:underline md:min-h-8">{tr('pulse.all').replace('{n}', String(AFRICA.length))}<IArrow /></Link>
             </div>
           </details>
         </div>
@@ -60,8 +64,8 @@ export default async function QuestionsPage({ searchParams }: Props) {
         <button type="submit" className="btn btn-primary">{tr('q.go')}</button>
       </form>
 
-      <div className="scrollbar-none mb-4 -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:mb-6 sm:flex-wrap sm:px-0" role="group" aria-label={tr('side.tags')}>
-        {POPULAR_TAGS.map((tg) => (
+      {(popular.length > 0 || filtered) && <div className="scrollbar-none mb-4 -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:mb-6 sm:flex-wrap sm:px-0" role="group" aria-label={tr('side.tags')}>
+        {popular.map((tg) => (
           <Link
             key={tg}
             href={tag === tg ? '/questions' : `/questions?tag=${encodeURIComponent(tg)}`}
@@ -72,7 +76,7 @@ export default async function QuestionsPage({ searchParams }: Props) {
           </Link>
         ))}
         {filtered && <Link href="/questions" className="btn btn-ghost btn-sm">{tr('q.clear')}</Link>}
-      </div>
+      </div>}
 
       <div className="mb-3"><QuestionTabs base="/questions" sort={sort} extra={extra ? extra + '&' : ''} /></div>
       {questions.length === 0 && <EmptyState title={tr('empty.q.h')} text={tr('q.hint')} href="/ask" cta={tr('q.new')} />}
