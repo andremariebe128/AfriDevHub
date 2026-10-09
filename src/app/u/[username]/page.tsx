@@ -3,12 +3,14 @@ import type { Metadata } from 'next';
 import Avatar from '@/components/Avatar';
 import EmptyState from '@/components/EmptyState';
 import Flag from '@/components/Flag';
-import { IExternal, ILang } from '@/components/Icons';
+import CvTimeline from '@/components/CvTimeline';
+import { IExternal, IFolder, IGlobe, ILang } from '@/components/Icons';
+import OwnerPrivate from '@/components/OwnerPrivate';
 import QuestionCard from '@/components/QuestionCard';
 import TagChip from '@/components/TagChip';
 import { loadProfile } from '@/lib/data';
 import { getT } from '@/lib/i18n-server';
-import { countryName } from '@/lib/utils';
+import { countryName, safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
 
 export const dynamic = 'force-dynamic';
@@ -27,15 +29,17 @@ const OPEN: Record<string, Key> = { mentor: 'p.o.mentor', collab: 'p.o.collab', 
 export default async function PublicProfile({ params }: Props) {
   const { username } = await params;
   const { t, locale } = await getT();
-  const { data, demo } = await loadProfile(decodeURIComponent(username));
+  const { data } = await loadProfile(decodeURIComponent(username));
   if (!data) notFound();
-  const { profile: p, questions, projects, rep } = data;
-  const safe = (u?: string | null) => (u && /^https?:\/\//.test(u) ? u : null);
+  const { profile: p, questions, projects, rep, cv } = data;
+  const safe = safeUrl;
+  const gh = safe(p.github_url);
+  const web = safe(p.website_url);
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-start">
-        <Avatar name={p.full_name || p.username} size={80} />
+        <Avatar name={p.full_name || p.username} src={p.avatar_url} size={80} />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">{p.full_name || `@${p.username}`}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
@@ -45,12 +49,18 @@ export default async function PublicProfile({ params }: Props) {
           </p>
           {p.headline && <p className="mt-2 font-medium">{p.headline}</p>}
           {p.bio && <p className="mt-2 max-w-2xl whitespace-pre-line text-muted">{p.bio}</p>}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {(p.open_to ?? []).map((o: string) => OPEN[o] && <span key={o} className="badge">{t(OPEN[o])}</span>)}
-            {safe(p.github_url) && <a className="chip tap" href={safe(p.github_url)!} target="_blank" rel="noopener noreferrer">GitHub <IExternal className="h-3.5 w-3.5" /></a>}
-            {safe(p.website_url) && <a className="chip tap" href={safe(p.website_url)!} target="_blank" rel="noopener noreferrer">Web <IExternal className="h-3.5 w-3.5" /></a>}
-            
-          </div>
+          <OwnerPrivate profileId={p.id} part="bio" publicShown={Boolean(p.bio)} />
+          {(p.open_to ?? []).length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {(p.open_to ?? []).map((o: string) => OPEN[o] && <span key={o} className="badge">{t(OPEN[o])}</span>)}
+            </div>
+          )}
+          {(gh || web) && (
+            <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label={t('u.links')}>
+              {gh && <a className="btn btn-secondary" href={gh} target="_blank" rel="noopener noreferrer"><IFolder className="h-4 w-4" />{t('u.gh')}<IExternal className="h-3.5 w-3.5 text-subtle" /></a>}
+              {web && <a className="btn btn-secondary" href={web} target="_blank" rel="noopener noreferrer"><IGlobe className="h-4 w-4" />{t('u.web')}<IExternal className="h-3.5 w-3.5 text-subtle" /></a>}
+            </div>
+          )}
           <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2 border-t border-line pt-3">
             {[[rep, t('u.rep')], [questions.length, t('u.q')], [projects.length, t('u.pj')]].map(([n, label]) => (
               <div key={label as string} className="flex items-baseline gap-1.5">
@@ -68,6 +78,13 @@ export default async function PublicProfile({ params }: Props) {
           {(p.languages ?? []).map((l: string) => <span key={l} className="chip"><ILang className="h-3.5 w-3.5" />{l}</span>)}
         </div>
       )}
+      {cv.length > 0 && (
+        <section aria-labelledby="cv-h">
+          <h2 id="cv-h" className="mb-4 text-lg font-semibold">{t('u.cv')}</h2>
+          <CvTimeline entries={cv} />
+        </section>
+      )}
+      <OwnerPrivate profileId={p.id} part="cv" publicShown={cv.length > 0} />
       <section aria-labelledby="act-h">
         <h2 id="act-h" className="mb-4 text-lg font-semibold">{t('u.activity')}</h2>
         {questions.length === 0 ? <EmptyState title={t('u.none')} /> : <div className="overflow-hidden rounded-lg border border-line bg-surface">{questions.map((q) => <QuestionCard key={q.id} q={q} />)}</div>}

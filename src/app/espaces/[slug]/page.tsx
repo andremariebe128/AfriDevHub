@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const r = await loadSpace((await params).slug);
-  return { title: r?.space.name ?? 'AfriDevHub' };
+  const [{ locale }, r] = await Promise.all([getT(), loadSpace((await params).slug)]);
+  return { title: r ? (r.space.kind === 'country' ? countryName(r.space.name, locale) : r.space.name) : 'AfriDevHub' };
 }
 
 export default async function SpacePage({ params }: Props) {
@@ -34,7 +34,7 @@ export default async function SpacePage({ params }: Props) {
       </header>
       <p className="max-w-2xl text-muted">{locale === 'en' ? space.desc_en : space.desc_fr}</p>
       {questions.length === 0 ? (
-        <EmptyState title={t('sp.none')} text="" href="/ask" cta={t('sp.ask')} />
+        <EmptyState title={t('sp.none')} />
       ) : (
         <div className="overflow-hidden rounded-lg border border-line bg-surface">{questions.map((q) => <QACard key={q.id} q={q} />)}</div>
       )}

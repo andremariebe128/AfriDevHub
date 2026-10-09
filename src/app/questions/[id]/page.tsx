@@ -7,7 +7,7 @@ import Flag from '@/components/Flag';
 import Markdown from '@/components/Markdown';
 import TagChip from '@/components/TagChip';
 import { loadQuestion } from '@/lib/data';
-import { plainPreview, timeAgo } from '@/lib/utils';
+import { countryName, plainPreview, timeAgo } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function QuestionPage({ params }: Props) {
   const { locale, t } = await getT();
   const { id } = await params;
-  const { data, demo } = await loadQuestion(id);
+  const { data } = await loadQuestion(id);
   if (!data) notFound();
   const { question, answers } = data;
   const user = question.profiles?.username;
@@ -34,10 +34,10 @@ export default async function QuestionPage({ params }: Props) {
       
       <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{question.title}</h1>
       <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
-        <Avatar name={user} size={28} />
+        <Avatar name={user} src={question.profiles?.avatar_url} size={28} />
         <span className="font-semibold text-muted">@{user ?? t('anon')}</span>
         {country && <Flag country={country} className="h-3.5 w-auto" />}
-        {country && <span>{country}</span>}
+        {country && <span>{countryName(country, locale)}</span>}
         <span aria-hidden="true">·</span>
         <span>{t('q.asked')} {timeAgo(question.created_at, locale)}</span>
       </p>
@@ -57,7 +57,6 @@ export default async function QuestionPage({ params }: Props) {
         questionAuthorId={question.author_id}
         acceptedAnswerId={question.accepted_answer_id}
         answers={answers}
-        readOnly={demo}
       />
     </article>
   );

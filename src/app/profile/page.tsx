@@ -4,27 +4,32 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Avatar from '@/components/Avatar';
+import AvatarUpload from '@/components/AvatarUpload';
+import CountrySelect from '@/components/CountrySelect';
+import CvEditor from '@/components/CvEditor';
 import { Field, TagInput } from '@/components/Field';
 import FormSkeleton from '@/components/FormSkeleton';
 import { useT } from '@/components/I18n';
 import { IAlert, IArrow, ILogout, IOk } from '@/components/Icons';
-import { COUNTRIES } from '@/lib/countries';
-import { friendlyError } from '@/lib/errors';
+import Switch from '@/components/Switch';
+import { canonicalCountry } from '@/lib/countries';
+import { normalizeCv, type CvEntry } from '@/lib/cv';
+import { friendlyError, isMissingColumn } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
-import { parseTags } from '@/lib/utils';
+import { parseTags, safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
 
 const OPEN: { v: string; k: Key }[] = [
   { v: 'mentor', k: 'p.o.mentor' }, { v: 'collab', k: 'p.o.collab' }, { v: 'work', k: 'p.o.work' },
 ];
 const EMPTY = { username: '', full_name: '', country: '', headline: '', bio: '', github_url: '', website_url: '', years_exp: '' };
-const isUrl = (v: string) => !v.trim() || /^https?:\/\//.test(v.trim());
+const isUrl = (v: string) => !v.trim() || safeUrl(v) !== null;
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="grid gap-4 border-t border-line py-6 md:grid-cols-[12rem_1fr] md:gap-8">
+    <section className="grid grid-cols-[minmax(0,1fr)] gap-4 border-t border-line py-6 md:grid-cols-[12rem_minmax(0,1fr)] md:gap-8">
       <h2 className="text-base font-semibold">{title}</h2>
-      <div className="space-y-4">{children}</div>
+      <div className="min-w-0 space-y-4">{children}</div>
     </section>
   );
 }
@@ -41,6 +46,10 @@ export default function ProfilePage() {
   const [langs, setLangs] = useState<string[]>([]);
   const [open, setOpen] = useState<string[]>([]);
   const [touched, setTouched] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [bioPublic, setBioPublic] = useState(false);
+  const [cv, setCv] = useState<CvEntry[]>([]);
+  const [cvPublic, setCvPublic] = useState(true);
   const [loadFail, setLoadFail] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
@@ -74,6 +83,10 @@ export default function ProfilePage() {
           setStack(data.stack ?? []);
           setLangs(data.languages ?? []);
           setOpen(data.open_to ?? []);
+          setAvatar(safeUrl(data.avatar_url));
+          setBioPublic(data.bio_public === true);
+          setCv(normalizeCv(data.cv));
+          setCvPublic(data.cv_public !== false);
         } else setLoadFail(true);
       } catch {
         if (alive) setLoadFail(true);
@@ -96,14 +109,23 @@ export default function ProfilePage() {
     if (!isUrl(f.github_url) || !isUrl(f.website_url)) return setMsg({ ok: false, text: t('err.url') });
     const years = f.years_exp.trim() === '' ? null : Math.min(60, Math.max(0, parseInt(f.years_exp, 10) || 0));
     setBusy(true);
-    const { error } = await supabaseBrowser().from('profiles').update({
-      username: f.username.trim(), full_name: f.full_name.trim() || null, country: f.country.trim() || null,
+    const base = {
+      username: f.username.trim(), full_name: f.full_name.trim() || null, country: f.country.trim() ? canonicalCountry(f.country) : null,
       headline: f.headline.trim().slice(0, 80) || null, bio: f.bio.trim() || null, stack: parseTags(stack.join(',')),
       github_url: f.github_url.trim() || null, website_url: f.website_url.trim() || null,
       languages: parseTags(langs.join(',')), years_exp: years, open_to: open,
-    }).eq('id', userId);
+    };
+    // Colonnes ajoutées par schema-v6 (bio_public, cv, cv_public) : si elles n'existent pas encore, on enregistre le reste.
+    const extra = { bio_public: bioPublic, cv, cv_public: cvPublic };
+    const sb = supabaseBrowser();
+    let { error } = await sb.from('profiles').update({ ...base, ...extra }).eq('id', userId);
+    let partial = false;
+    if (error && isMissingColumn(error)) {
+      ({ error } = await sb.from('profiles').update(base).eq('id', userId));
+      partial = !error;
+    }
     setBusy(false);
-    setMsg(error ? { ok: false, text: error.code === '23505' ? t('err.taken') : friendlyError(error.message, t) } : { ok: true, text: t('p.saved') });
+    setMsg(error ? { ok: false, text: error.code === '23505' ? t('err.taken') : friendlyError(error.message, t) } : { ok: true, text: partial ? `${t('p.saved')} ${t('err.partial')}` : t('p.saved') });
   }
 
   if (!ready) return <FormSkeleton narrow />;
@@ -119,7 +141,7 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto max-w-3xl">
       <header className="flex flex-wrap items-center gap-4 pb-6">
-        <Avatar name={f.full_name || f.username || '?'} size={64} />
+        <Avatar name={f.full_name || f.username || '?'} src={avatar} size={64} />
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">{t('p.h')}</h1>
           {f.username && <Link href={`/u/${f.username}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-accent-fg hover:underline md:min-h-8">{t('p.view')}<IArrow /></Link>}
@@ -140,6 +162,10 @@ export default function ProfilePage() {
       )}
       <form onSubmit={save} noValidate>
         <Section title={t('p.s.id')}>
+          <div>
+            <p className="mb-1.5 text-sm font-semibold">{t('av.h')}</p>
+            <AvatarUpload userId={userId} name={f.full_name || f.username || '?'} url={avatar} onChange={setAvatar} />
+          </div>
           <Field id="pf-user" label={t('p.user')} hint={t('p.hint.user')} error={userErr}>
             <input id="pf-user" className="input" autoComplete="username" autoCapitalize="none" spellCheck={false} value={f.username} onChange={set('username')} aria-invalid={!!userErr} aria-describedby={userErr ? 'pf-user-err' : 'pf-user-hint'} />
           </Field>
@@ -150,8 +176,7 @@ export default function ProfilePage() {
             <input id="pf-head" className="input" maxLength={80} value={f.headline} onChange={set('headline')} aria-describedby="pf-head-hint pf-head-count" />
           </Field>
           <Field id="pf-country" label={t('p.country')} hint={t('p.hint.country')}>
-            <input id="pf-country" className="input" list="pf-countries" autoComplete="country-name" value={f.country} onChange={set('country')} aria-describedby="pf-country-hint" />
-            <datalist id="pf-countries">{COUNTRIES.map((c) => <option key={c} value={c} />)}</datalist>
+            <CountrySelect id="pf-country" value={f.country} onChange={(v) => setF({ ...f, country: v })} describedBy="pf-country-hint" />
           </Field>
         </Section>
 
@@ -159,11 +184,17 @@ export default function ProfilePage() {
           <Field id="pf-bio" label={t('p.bio')} optional={t('p.opt')}>
             <textarea id="pf-bio" className="input min-h-28" value={f.bio} onChange={set('bio')} />
           </Field>
+          <Switch id="pf-bio-public" checked={bioPublic} onChange={setBioPublic} label={t('p.bio.public')} help={bioPublic ? t('p.bio.on') : t('p.bio.off')} />
           <TagInput id="pf-stack" label={t('p.stack')} value={stack} onChange={setStack} max={5} />
           <TagInput id="pf-langs" label={t('p.lang')} value={langs} onChange={setLangs} max={5} />
           <Field id="pf-years" label={t('p.years')} hint={t('p.hint.years')}>
             <input id="pf-years" className="input sm:max-w-[10rem]" type="number" inputMode="numeric" min={0} max={60} value={f.years_exp} onChange={set('years_exp')} aria-describedby="pf-years-hint" />
           </Field>
+        </Section>
+
+        <Section title={t('p.s.cv')}>
+          <Switch id="pf-cv-public" checked={cvPublic} onChange={setCvPublic} label={t('cv.public')} help={cvPublic ? t('cv.public.on') : t('cv.public.off')} />
+          <CvEditor value={cv} onChange={setCv} />
         </Section>
 
         <Section title={t('p.s.links')}>

@@ -3,20 +3,20 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
+import Avatar from '@/components/Avatar';
 import Flag from '@/components/Flag';
 import { useT } from '@/components/I18n';
 import { IExternal } from '@/components/Icons';
+import { sortCountries } from '@/lib/countries';
 import { countryName } from '@/lib/utils';
 import { IStar } from '@/components/Icons';
 import { supabaseBrowser } from '@/lib/supabase';
 
-export type Proj = { id: string; title: string; description?: string | null; tags: string[]; url: string | null; cover: string | null; username: string | null; country: string | null; avg: number; count: number };
+export type Proj = { id: string; title: string; description?: string | null; tags: string[]; url: string | null; cover: string | null; username: string | null; avatar?: string | null; country: string | null; avg: number; count: number };
 
 function Stars({ id, avg, count, label, reviews }: { id: string; avg: number; count: number; label: string; reviews: string }) {
   const router = useRouter();
-  const locked = id.startsWith('demo-'); // données de démonstration : notation désactivée
   async function rate(n: number) {
-    if (locked) return;
     const sb = supabaseBrowser();
     const { data } = await sb.auth.getSession();
     if (!data.session) return router.push('/login');
@@ -26,8 +26,8 @@ function Stars({ id, avg, count, label, reviews }: { id: string; avg: number; co
   return (
     <div className="flex items-center gap-0.5" role="group" aria-label={label}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" disabled={locked} onClick={() => rate(n)} aria-label={`${n}/5`}
-          className={`flex h-6 w-5 items-center justify-center ${n <= Math.round(avg) ? 'text-muted' : 'text-line-strong'} ${locked ? 'cursor-default' : 'hover:text-accent'}`}>
+        <button key={n} type="button" onClick={() => rate(n)} aria-label={`${n}/5`}
+          className={`flex h-6 w-5 items-center justify-center ${n <= Math.round(avg) ? 'text-muted' : 'text-line-strong'} hover:text-accent`}>
           <IStar on={n <= Math.round(avg)} className="h-3.5 w-3.5" />
         </button>
       ))}
@@ -40,7 +40,7 @@ export default function ProjectsHub({ items }: { items: Proj[] }) {
   const { t, locale } = useT();
   const [q, setQ] = useState(''); const [stack, setStack] = useState(''); const [country, setCountry] = useState('');
   const stacks = useMemo(() => Array.from(new Set(items.flatMap((i) => i.tags))).sort(), [items]);
-  const countries = useMemo(() => Array.from(new Set(items.map((i) => i.country).filter(Boolean) as string[])).sort(), [items]);
+  const countries = useMemo(() => sortCountries(Array.from(new Set(items.map((i) => i.country).filter(Boolean) as string[])), locale), [items, locale]);
   const shown = items.filter((i) => (!stack || i.tags.includes(stack)) && (!country || i.country === country) && i.title.toLowerCase().includes(q.toLowerCase()));
   return (
     <div>
@@ -73,6 +73,7 @@ export default function ProjectsHub({ items }: { items: Proj[] }) {
               <div className="flex flex-wrap gap-1.5">{p.tags.map((tg) => <span key={tg} className="chip font-mono !text-[11.5px]">{tg}</span>)}</div>
               {p.username && (
                 <Link href={`/u/${encodeURIComponent(p.username)}`}className="tap ml-auto flex items-center gap-1.5 text-xs text-subtle hover:text-accent-fg">
+                  <Avatar name={p.username} src={p.avatar} size={20} className="!ring-0" />
                   {p.country && <Flag country={p.country} className="h-3 w-auto" />}
                   <span className="font-medium text-muted">@{p.username}</span>
                 </Link>

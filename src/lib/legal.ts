@@ -221,7 +221,6 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
           [
             'Les réponses viennent de membres de la communauté et ne sont pas vérifiées : testez avant de mettre en production et ne les considérez pas comme un conseil professionnel, juridique ou financier.',
             'Les opportunités, missions et annonces de mentorat sont publiées par des tiers. Vérifiez leur sérieux avant de communiquer des informations ou d’engager de l’argent. AfriDevHub n’est pas partie aux accords conclus entre membres.',
-            'Les contenus marqués « démonstration » sont fictifs et n’ont qu’une valeur d’illustration.',
           ],
         ],
       },
@@ -523,7 +522,6 @@ const EN: Record<LegalDoc['slug'], LegalDoc> = {
           [
             'Answers come from community members and are not verified: test before going to production and do not treat them as professional, legal or financial advice.',
             'Opportunities, missions and mentoring listings are published by third parties. Check that they are genuine before sharing information or committing money. AfriDevHub is not a party to agreements between members.',
-            'Content marked “demo” is fictional and for illustration only.',
           ],
         ],
       },

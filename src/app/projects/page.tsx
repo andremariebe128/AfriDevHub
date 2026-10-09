@@ -10,15 +10,15 @@ export const generateMetadata = async (): Promise<Metadata> => ({ title: (await 
 
 export default async function ProjectsPage() {
   const { t } = await getT();
-  const { data: items, demo } = await loadProjects();
+  const { data: items } = await loadProjects();
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold">{t('pj.explore')}</h1>
         
       </div>
-      <div className="mb-4"><AddProjectForm /></div>
-      {items.length === 0 ? <EmptyState title={t('empty.pj.h')} text={t('pj.none')} /> : <ProjectsHub items={items} />}
+      <div className="mb-4"><AddProjectForm defaultOpen={items.length === 0} /></div>
+      {items.length === 0 ? <EmptyState title={t('empty.pj.h')} text={t('pj.empty.p')} href="#add-project" cta={t('pj.cta')} /> : <ProjectsHub items={items} />}
     </div>
   );
 }

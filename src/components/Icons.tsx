@@ -2,6 +2,7 @@ import {
   ArrowBigUp, ArrowRight, Bold, Braces, CircleAlert, CircleCheck, Eye, EyeOff, Lightbulb, Link2, LogOut, ThumbsUp, X,
   MessageSquareReply, Award, Bell, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CloudOff, Code, Command, Compass, Download,
   ExternalLink, FolderGit2, Globe, Handshake, Heart, House, Inbox, Languages, Leaf, MapPin, MessageCircle, Monitor, Moon, Plus, Rocket,
+  Briefcase, CalendarDays, Camera, GraduationCap, Lock, Trash2, Upload,
   Search, SearchX, Share2, Smartphone, SquarePen, Star, Sun, Target, Terminal, Trophy, User, Users, WifiOff, Zap, type LucideIcon,
 } from 'lucide-react';
 
@@ -67,6 +68,13 @@ export const ILogout = make(LogOut, 'h-4 w-4');
 export const IReply = make(MessageSquareReply, 'h-5 w-5');
 export const IThumb = make(ThumbsUp, 'h-5 w-5');
 export const IAward = make(Award, 'h-5 w-5');
+export const ICalendar = make(CalendarDays, 'h-4 w-4');
+export const ICamera = make(Camera, 'h-4 w-4');
+export const IUpload = make(Upload, 'h-4 w-4');
+export const ITrash = make(Trash2, 'h-4 w-4');
+export const ILock = make(Lock, 'h-3.5 w-3.5');
+export const IBriefcase = make(Briefcase, 'h-4 w-4');
+export const IGrad = make(GraduationCap, 'h-4 w-4');
 
 export const IHeart = ({ className, on }: P & { on?: boolean }) => (
   <Heart className={className ?? 'h-5 w-5'} fill={on ? 'currentColor' : 'none'} aria-hidden="true" />

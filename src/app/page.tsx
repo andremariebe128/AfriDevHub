@@ -6,10 +6,9 @@ import { IArrow, IGlobe, ISearch } from '@/components/Icons';
 import Pulse from '@/components/Pulse';
 import QACard from '@/components/QACard';
 import QuestionTabs from '@/components/QuestionTabs';
-import { loadContributors, loadQuestions, loadStats, type Sort } from '@/lib/data';
+import { loadContributors, loadItems, loadPopularTags, loadQuestions, loadSpaces, loadStats, type Sort } from '@/lib/data';
 import { getT } from '@/lib/i18n-server';
-import { loadItems } from '@/lib/data';
-import { POPULAR_TAGS, countryName, oppKind } from '@/lib/utils';
+import { oppKind } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +18,19 @@ const sideHead = 'text-xs font-semibold uppercase tracking-wide text-subtle';
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
   const { sort: rawSort } = await searchParams;
   const sort: Sort = rawSort === 'unanswered' || rawSort === 'top' ? rawSort : 'new';
-  const [{ t, locale }, questions, stats, top, opps] = await Promise.all([getT(), loadQuestions({ limit: 10, sort }), loadStats(), loadContributors(5), loadItems('opportunity')]);
+  const { t, locale } = await getT();
+  const [questions, stats, top, opps, spaces, popular] = await Promise.all([loadQuestions({ limit: 10, sort }), loadStats(), loadContributors(5), loadItems('opportunity'), loadSpaces(locale), loadPopularTags(10)]);
+  const pulse = spaces.filter((s) => s.kind === 'Pays' && s.href)
+    .map((s) => ({ name: s.title, href: s.href!, members: s.members ?? 0 }))
+    .sort((a, b) => b.members - a.members).slice(0, 8);
   const nf = new Intl.NumberFormat(locale);
-  const demo = questions.demo || stats.demo;
   const s = stats.data;
-  const facts = [
+  const facts: [number, string][] = ([
     [s.members, t('stat.members')],
     [s.countries, t('stat.countries')],
     [s.solved, t('stat.solved')],
     [s.projects, t('stat.projects')],
-  ] as const;
+  ] as [number, string][]).filter(([n]) => n > 0);
 
   return (
     <div>
@@ -50,15 +52,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <Link href="/ask" className="btn btn-primary mt-3 sm:hidden">{t('home.cta2')}<IArrow /></Link>
           </div>
 
-          <dl className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-line pt-4">
+          {facts.length > 0 && <dl className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-2 border-t border-line pt-4">
             {facts.map(([n, label]) => (
               <div key={label} className="flex items-baseline gap-1.5">
                 <dd className="font-mono text-sm font-semibold tabular">{nf.format(n)}</dd>
                 <dt className="text-sm text-subtle">{label}</dt>
               </div>
             ))}
-            
-          </dl>
+          </dl>}
         </div>
       </section>
 
@@ -82,49 +83,57 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </section>
 
         <aside className="space-y-7 lg:sticky lg:top-24 lg:self-start" aria-label={t('side.tags')}>
-          <nav aria-label={t('side.tags')}>
-            <h3 className={sideHead}>{t('side.tags')}</h3>
-            <ul className="mt-2 flex flex-wrap gap-1.5">
-              {POPULAR_TAGS.map((tg) => (
-                <li key={tg}><Link href={`/questions?tag=${encodeURIComponent(tg)}`} className="chip tap font-mono !text-[12px]">{tg}</Link></li>
-              ))}
-            </ul>
-          </nav>
+          {popular.length > 0 && (
+            <nav aria-label={t('side.tags')}>
+              <h3 className={sideHead}>{t('side.tags')}</h3>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {popular.map((tg) => (
+                  <li key={tg}><Link href={`/questions?tag=${encodeURIComponent(tg)}`} className="chip tap font-mono !text-[12px]">{tg}</Link></li>
+                ))}
+              </ul>
+            </nav>
+          )}
 
-          <section>
-            <h3 className={sideHead}>{t('side.top')}</h3>
-            <ol className="mt-1 divide-y divide-line border-y border-line">
-              {top.data.map((c, i) => (
-                <li key={c.username}>
-                  <Link href={`/u/${encodeURIComponent(c.username)}`} className="flex min-h-11 items-center gap-3 py-1.5 hover:text-accent-fg">
-                    <span className="w-3 font-mono text-xs text-subtle">{i + 1}</span>
-                    <Avatar name={c.username} size={26} />
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">@{c.username}</span>
-                    {c.country && <Flag country={c.country} className="h-3 w-auto" />}
-                    {c.rep > 0 && <span className="font-mono text-xs text-subtle tabular">{nf.format(c.rep)}</span>}
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </section>
+          {top.data.length > 0 && (
+            <section>
+              <h3 className={sideHead}>{t('side.top')}</h3>
+              <ol className="mt-1 divide-y divide-line border-y border-line">
+                {top.data.map((c, i) => (
+                  <li key={c.username}>
+                    <Link href={`/u/${encodeURIComponent(c.username)}`} className="flex min-h-11 items-center gap-3 py-1.5 hover:text-accent-fg">
+                      <span className="w-3 font-mono text-xs text-subtle">{i + 1}</span>
+                      <Avatar name={c.username} src={c.avatar_url} size={26} />
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">@{c.username}</span>
+                      {c.country && <Flag country={c.country} className="h-3 w-auto" />}
+                      {c.rep > 0 && <span className="font-mono text-xs text-subtle tabular">{nf.format(c.rep)}</span>}
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
           <section>
             <h3 className={sideHead}>{t('side.opps')}</h3>
-            <ul className="mt-1 divide-y divide-line border-y border-line">
-              {opps.slice(0, 3).map((o) => (
-                <li key={o.title}>
-                  <Link href="/opportunites" className="block py-2.5 hover:text-accent-fg">
-                    <span className="text-xs text-subtle">{oppKind(o.kind, locale)}</span>
-                    <span className="mt-0.5 block text-sm font-medium leading-snug">{o.title}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {opps.length === 0 ? (
+              <p className="mt-2 text-sm text-muted">{t('op.empty.h')}. <Link href="/publier" className="tap font-medium text-accent-fg hover:underline">{t('h.pub')}</Link></p>
+            ) : (
+              <ul className="mt-1 divide-y divide-line border-y border-line">
+                {opps.slice(0, 3).map((o) => (
+                  <li key={o.id ?? o.title}>
+                    <Link href="/opportunites" className="block py-2.5 hover:text-accent-fg">
+                      <span className="text-xs text-subtle">{oppKind(o.kind, locale)}</span>
+                      <span className="mt-0.5 block text-sm font-medium leading-snug">{o.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section>
             <h3 className={`${sideHead} flex items-center gap-1.5`}><IGlobe className="h-3.5 w-3.5" />{t('q.spaces')}</h3>
-            <div className="mt-1"><Pulse /></div>
+            <div className="mt-1"><Pulse countries={pulse} /></div>
           </section>
         </aside>
       </div>
