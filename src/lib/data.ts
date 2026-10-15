@@ -158,7 +158,7 @@ export async function loadQuestions(opts: { q?: string; tag?: string; country?: 
   try {
     const sb = supabaseServer();
     const { data, error } = await withAvatar((a) => {
-      let query = sb.from('questions').select(sq(`*, profiles${country ? '!inner' : ''}(${pcols(a, 'username, country')}), answers(count)`));
+      let query = sb.from('questions').select(sq(`*, profiles${country ? '!inner' : ''}(${pcols(a, 'username, country')}), answers!answers_question_id_fkey(count)`));
       if (q.trim()) query = query.ilike('title', `%${q.trim()}%`);
       if (tag) query = query.contains('tags', [tag]);
       if (country) query = query.eq('profiles.country', country);
@@ -222,7 +222,7 @@ export async function loadProfile(username: string): Promise<Loaded<ProfileView 
     if (error) return fail(null);
     if (!p) return ok(null);
     const [{ data: qs }, { data: pjs }, { data: ans }] = await Promise.all([
-      withAvatar((a) => withTimeout(sb.from('questions').select(sq(`*, profiles(${pcols(a, 'username, country')}), answers(count)`)).eq('author_id', p.id).order('created_at', { ascending: false }).limit(10))),
+      withAvatar((a) => withTimeout(sb.from('questions').select(sq(`*, profiles(${pcols(a, 'username, country')}), answers!answers_question_id_fkey(count)`)).eq('author_id', p.id).order('created_at', { ascending: false }).limit(10))),
       withTimeout(sb.from('projects').select('id, title, url, tags').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
       withTimeout(sb.from('answers').select('score').eq('author_id', p.id)),
     ]);

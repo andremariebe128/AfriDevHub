@@ -323,7 +323,7 @@ const fr = {
   'u.gh': 'GitHub',
   'u.web': 'Portfolio / Site web',
   'u.links': 'Liens',
-  'pulse.all': 'Voir les {n} pays',
+  'pulse.all': 'Voir les {n} pays', 'q.bycountry': 'Filtrer par pays',
 } as const;
 export type Key = keyof typeof fr;
 
@@ -649,6 +649,6 @@ const en: Record<Key, string> = {
   'u.gh': 'GitHub',
   'u.web': 'Portfolio / Website',
   'u.links': 'Links',
-  'pulse.all': 'See all {n} countries',
+  'pulse.all': 'See all {n} countries', 'q.bycountry': 'Filter by country',
 };
 export const DICT: Record<Locale, Record<Key, string>> = { fr, en };

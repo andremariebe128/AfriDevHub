@@ -341,3 +341,229 @@ html[data-lite] .weave::before { display: none; }
   .tap { position: relative; }
   .tap::after { content: ""; position: absolute; inset: -11px -4px; }
 }
+
+/* =====================================================================
+   Liquid Glass (fond + panneau verre depoli, inspiration iOS/macOS)
+   ===================================================================== */
+
+:root {
+  --lg-b1: #7fb2cf;
+  --lg-b2: #eb9f2f;
+  --lg-b3: #279160;
+  --lg-b4: #288281;
+  --lg-b5: #dc722d;
+}
+.dark {
+  --lg-b1: #1f6e9c;
+  --lg-b2: #8a4f08;
+  --lg-b3: #1f7a50;
+  --lg-b4: #1d5f5e;
+  --lg-b5: #7a3c10;
+}
+
+/* Fond liquide : blobs tres flous qui ondulent */
+.lg-blob {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle at 35% 35%, var(--lg-c), transparent 70%);
+  filter: blur(70px) saturate(1.2);
+  opacity: 0.55;
+  will-change: transform;
+  animation: lg-float var(--lg-d, 30s) ease-in-out infinite;
+  animation-delay: var(--lg-delay, 0s);
+}
+.dark .lg-blob { opacity: 0.4; }
+
+.lg-blob-a { width: 340px; height: 340px; left: 8%;  top: 4%; }
+.lg-blob-b { width: 300px; height: 300px; left: 66%; top: 8%; }
+.lg-blob-c { width: 400px; height: 400px; left: 72%; top: 60%; }
+.lg-blob-d { width: 280px; height: 280px; left: 4%;  top: 70%; }
+.lg-blob-e { width: 220px; height: 220px; left: 38%; top: 36%; }
+
+@keyframes lg-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25%      { transform: translate(calc(var(--lg-drift, 60px) * 0.6), calc(var(--lg-drift, 60px) * -0.4)) scale(1.08); }
+  50%      { transform: translate(calc(var(--lg-drift, 60px) * -0.5), calc(var(--lg-drift, 60px) * 0.5)) scale(0.94); }
+  75%      { transform: translate(calc(var(--lg-drift, 60px) * 0.3), calc(var(--lg-drift, 60px) * 0.6)) scale(1.04); }
+}
+
+/* Grain fin (texture verre) */
+.lg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* Panneau verre depoli : translucide, bords lumineux, reflet */
+.glass {
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.72), rgb(255 255 255 / 0.5));
+  border-color: rgb(255 255 255 / 0.65);
+  box-shadow:
+    0 8px 32px rgb(27 26 23 / 0.10),
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -1px 0 rgb(255 255 255 / 0.3);
+}
+.dark .glass {
+  background: linear-gradient(135deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.04));
+  border-color: rgb(255 255 255 / 0.14);
+  box-shadow:
+    0 8px 32px rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 -1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* Arrete le mouvement si l'utilisateur le demande ou en mode leger */
+html[data-lite] .lg-blob { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .lg-blob { animation: none; }
+}
+
+/* =====================================================================
+   Theme dev : transition formulaire (sign-in <-> sign-up)
+   ===================================================================== */
+
+/* Repli/deploiement anime des blocs conditionnels (username, regles, consent) */
+.dev-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease;
+}
+.dev-reveal[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.dev-reveal > .dev-reveal-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Reflow "re-indentation" du formulaire au changement de mode */
+@keyframes dev-reflow {
+  0% { opacity: 0; transform: translateY(12px); filter: blur(6px); }
+  100% { opacity: 1; transform: none; filter: blur(0); }
+}
+.dev-reflow { animation: dev-reflow 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* Prompt terminal (~/afidevhub $ sign-in) */
+.dev-prompt {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  background: var(--code-bg);
+  color: #d6e4ee;
+}
+.dev-prompt .caret { width: 8px; height: 13px; background: #7fd1a4; }
+
+html[data-lite] .dev-reveal { opacity: 1; transition: none; }
+html[data-lite] .dev-reveal:not([data-open="true"]) { display: none; }
+html[data-lite] .dev-reflow { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dev-reveal { opacity: 1; transition: none; }
+  .dev-reveal:not([data-open="true"]) { display: none; }
+  .dev-reflow { animation: none; }
+}
+
+/* =====================================================================
+   Variantes d'animation — page /animations (demos live)
+   ===================================================================== */
+
+/* 1. Verre qui respire : le panneau gonfle doucement */
+@keyframes anim-breathe-kf {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+.anim-breathe { animation: anim-breathe-kf 6s ease-in-out infinite; }
+
+/* 2. Reflet lumineux : un faisceau balaie le panneau */
+.anim-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.35) 48%, transparent 60%);
+  transform: translateX(-120%);
+  animation: anim-sheen-kf 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes anim-sheen-kf {
+  0%, 55% { transform: translateX(-120%); }
+  85%, 100% { transform: translateX(120%); }
+}
+
+/* 5. Scanline CRT : une ligne traverse le panneau */
+.anim-scanline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgb(95 169 211 / 0.6), transparent);
+  filter: blur(1px);
+  animation: anim-scanline-kf 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes anim-scanline-kf {
+  0% { top: -4%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+
+/* 6. Checkmark anime : le tick se dessine */
+@keyframes check-draw { to { stroke-dashoffset: 0; } }
+
+/* 9. Bande kente qui se dessine : le fond se dévoile */
+.anim-kente-bar {
+  background: repeating-linear-gradient(90deg, #1873a1 0 24px, #279160 24px 36px, #dc722d 36px 48px, #288281 48px 52px, #eb9f2f 52px 64px);
+  background-size: 0% 100%;
+  animation: anim-kente-kf 1.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+@keyframes anim-kente-kf { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
+
+/* 10. Losanges tournants */
+.anim-spin-slow { animation: anim-spin-kf 8s linear infinite; }
+.anim-spin-slower { animation: anim-spin-kf 12s linear infinite reverse; }
+@keyframes anim-spin-kf { to { transform: rotate(405deg); } }
+
+/* 12. Particules de code : les caracteres montent et s estompent */
+.anim-particle {
+  bottom: -10%;
+  opacity: 0;
+  animation: anim-particle-kf linear infinite;
+}
+@keyframes anim-particle-kf {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-220px) rotate(25deg); opacity: 0; }
+}
+
+/* 11. Slide horizontal du formulaire au changement de mode */
+.anim-slide-left { animation: anim-slide-left-kf 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.anim-slide-right { animation: anim-slide-right-kf 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes anim-slide-left-kf {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes anim-slide-right-kf {
+  from { opacity: 0; transform: translateX(-40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Arret des animations en mode leger / reduced-motion */
+html[data-lite] .anim-breathe,
+html[data-lite] .anim-sheen::after,
+html[data-lite] .anim-scanline::after,
+html[data-lite] .anim-spin-slow,
+html[data-lite] .anim-spin-slower,
+html[data-lite] .anim-particle { animation: none !important; }
+html[data-lite] .anim-kente-bar { background-size: 100% 100%; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .anim-breathe,
+  .anim-sheen::after,
+  .anim-scanline::after,
+  .anim-spin-slow,
+  .anim-spin-slower,
+  .anim-particle { animation: none !important; }
+  .anim-kente-bar { background-size: 100% 100%; animation: none; }
+}

@@ -13,18 +13,29 @@ type Row = { id: string; type: 'answer' | 'accepted' | 'vote'; question_id: stri
 export default function NotificationsList() {
   const { t, locale } = useT();
   const [rows, setRows] = useState<Row[] | null>(null);
+
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       const sb = supabaseBrowser();
+      // Attendre que la session soit disponible avant de requêter
+      const { data: sessionData } = await sb.auth.getSession();
+      if (!sessionData.session) {
+        if (!cancelled) setRows([]);
+        return;
+      }
       const { data, error } = await sb.from('notifications')
         .select('id, type, question_id, created_at, read_at, actor:profiles!actor_id(username), question:questions(title)')
         .order('created_at', { ascending: false }).limit(50);
+      if (cancelled) return;
       if (error) return setRows([]);
       const list = (data ?? []) as unknown as Row[];
       setRows(list);
       if (list.some((r) => !r.read_at)) await sb.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null);
     })();
+    return () => { cancelled = true; };
   }, []);
+
   if (rows === null) return <p className="mt-5 text-sm text-muted" aria-busy="true">…</p>;
   if (rows.length === 0) return (
     <section className="mt-5 rounded-lg border border-line bg-surface px-5 py-5">

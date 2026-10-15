@@ -4,42 +4,76 @@ import { getT } from '@/lib/i18n-server';
 
 export const generateMetadata = async (): Promise<Metadata> => ({ title: (await getT()).t('dl.h') });
 
-/** Les liens viennent des variables d'environnement : tant qu'un binaire n'est pas publié, la carte indique « Bientôt disponible ». */
 const PLATFORMS = [
-  { id: 'android', name: 'Android', kind: 'APK', url: process.env.NEXT_PUBLIC_DL_ANDROID },
-  { id: 'ios', name: 'iPhone / iPad', kind: 'TestFlight · App Store', url: process.env.NEXT_PUBLIC_DL_IOS },
-  { id: 'windows', name: 'Windows', kind: 'Installateur .exe', url: process.env.NEXT_PUBLIC_DL_WINDOWS },
-  { id: 'macos', name: 'macOS', kind: 'Image disque .dmg', url: process.env.NEXT_PUBLIC_DL_MACOS },
-  { id: 'linux', name: 'Linux', kind: 'AppImage / .deb', url: process.env.NEXT_PUBLIC_DL_LINUX },
-];
+  { id: 'pwa', name: 'Application Web (PWA)', kind: 'S’installe depuis le navigateur', url: null, logo: null, accent: 'brand' },
+  { id: 'android', name: 'Android', kind: 'APK · 138 MB', url: '/builds/android.apk', logo: '/icons/os-android.svg', accent: '#3DDC84' },
+  { id: 'ios', name: 'iPhone / iPad', kind: 'TestFlight · App Store', url: null, logo: '/icons/os-apple.svg', accent: '#888' },
+  { id: 'windows', name: 'Windows', kind: 'Installateur .exe', url: '/builds/AfriDevHub-Setup-1.0.0.exe', logo: '/icons/os-windows.svg', accent: '#00adef' },
+  { id: 'macos', name: 'macOS', kind: 'Image disque .dmg', url: null, logo: '/icons/os-apple.svg', accent: '#888' },
+  { id: 'linux', name: 'Linux', kind: 'Paquet .deb · 9 MB', url: '/builds/linux.deb', logo: '/icons/os-linux.svg', accent: '#FCC624' },
+] as const;
 
 export default async function DownloadPage() {
   const { t } = await getT();
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{t('dl.h')}</h1>
-        <p className="mt-2 text-muted">{t('dl.p')}</p>
-      </div>
-      <ul className="grid gap-3 sm:grid-cols-2">
-        <li className="rounded-lg border border-brand-600 bg-surface p-4 sm:col-span-2">
-          <h2 className="font-semibold">{t('dl.pwa')}</h2>
-          <p className="mt-1 text-sm text-muted">{t('dl.pwa.p')}</p>
-          <div className="mt-3"><InstallButton className="btn btn-primary" /></div>
-        </li>
-        {PLATFORMS.map((p) => (
-          <li key={p.id} className="rounded-lg border border-line bg-surface p-4">
-            <h2 className="font-semibold">{p.name}</h2>
-            <p className="mt-1 text-sm text-muted">{p.kind}</p>
-            <div className="mt-3">
-              {p.url
-                ? <a href={p.url} className="btn btn-secondary" rel="noopener noreferrer">{t('dl.get')}</a>
-                : <span className="btn btn-secondary pointer-events-none opacity-60" aria-disabled="true">{t('dl.soon')}</span>}
-            </div>
-          </li>
-        ))}
+    <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20">
+      {/* En-tête */}
+      <header className="mb-12 text-center sm:mb-16">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{t('dl.h')}</h1>
+        <p className="mx-auto mt-3 max-w-xl text-muted sm:text-lg">{t('dl.p')}</p>
+      </header>
+
+      {/* Grille 6 cartes — alignement parfait, responsive 1/2/3 cols */}
+      <ul className="grid gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
+        {PLATFORMS.map((p) => {
+          const isPwa = p.id === 'pwa';
+          return (
+            <li
+              key={p.id}
+              className="group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:shadow-float"
+            >
+              {/* Liseré coloré en haut */}
+              <div
+                className="absolute inset-x-0 top-0 h-1 opacity-80 transition-opacity group-hover:opacity-100"
+                style={{ background: p.accent ? `linear-gradient(90deg, transparent, ${p.accent}, transparent)` : 'var(--accent)' }}
+              />
+
+              {/* Logo */}
+              <div className="mb-5 flex h-14 items-center">
+                {isPwa ? (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-white shadow-[0_4px_14px_rgba(31,110,156,0.3)]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7"><rect x="5" y="2" width="14" height="20" rx="3" /><path d="M11 18.5h2" /></svg>
+                  </div>
+                ) : (
+                  <img src={p.logo!} alt="" className="h-12 w-12 drop-shadow-sm transition-transform duration-300 group-hover:scale-110" />
+                )}
+              </div>
+
+              {/* Texte */}
+              <h2 className="text-lg font-semibold">{p.name}</h2>
+              <p className="mt-1 text-sm text-muted">{p.kind}</p>
+
+              {/* Bouton */}
+              <div className="mt-auto pt-6">
+                {isPwa ? (
+                  <InstallButton className="btn btn-primary w-full" />
+                ) : p.url ? (
+                  <a href={p.url} className="btn btn-primary w-full transition-transform duration-150 group-active:scale-[0.98]">
+                    {t('dl.get')}
+                  </a>
+                ) : (
+                  <span className="btn btn-secondary w-full cursor-not-allowed opacity-50" aria-disabled="true">
+                    {t('dl.soon')}
+                  </span>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
-      <p className="text-sm text-subtle">{t('dl.note')}</p>
+
+      {/* Note */}
+      <p className="mt-10 text-center text-sm text-subtle">{t('dl.note')}</p>
     </div>
   );
 }
