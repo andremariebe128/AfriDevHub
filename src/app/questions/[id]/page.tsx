@@ -4,6 +4,7 @@ import { getT } from '@/lib/i18n-server';
 import AnswerSection from '@/components/AnswerSection';
 import Avatar from '@/components/Avatar';
 import Flag from '@/components/Flag';
+import QuestionActions from '@/components/QuestionActions';
 import Markdown from '@/components/Markdown';
 import TagChip from '@/components/TagChip';
 import { loadQuestion } from '@/lib/data';
@@ -25,7 +26,7 @@ export default async function QuestionPage({ params }: Props) {
   const { id } = await params;
   const { data } = await loadQuestion(id);
   if (!data) notFound();
-  const { question, answers } = data;
+  const { question, answers, comments } = data;
   const user = question.profiles?.username;
   const country = question.profiles?.country;
 
@@ -40,6 +41,7 @@ export default async function QuestionPage({ params }: Props) {
         {country && <span>{countryName(country, locale)}</span>}
         <span aria-hidden="true">·</span>
         <span>{t('q.asked')} {timeAgo(question.created_at, locale)}</span>
+        {question.updated_at && question.updated_at !== question.created_at && <><span aria-hidden="true">·</span><span>{t('edited')}</span></>}
       </p>
       {question.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -52,11 +54,14 @@ export default async function QuestionPage({ params }: Props) {
         <Markdown>{question.body}</Markdown>
       </div>
 
+      <QuestionActions questionId={question.id} authorId={question.author_id} authorName={user ?? t('anon')} />
+
       <AnswerSection
         questionId={question.id}
         questionAuthorId={question.author_id}
         acceptedAnswerId={question.accepted_answer_id}
         answers={answers}
+        comments={comments}
       />
     </article>
   );

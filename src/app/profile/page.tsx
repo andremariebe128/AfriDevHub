@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Avatar from '@/components/Avatar';
+import AccountPanel from '@/components/AccountPanel';
 import AvatarUpload from '@/components/AvatarUpload';
 import CountrySelect from '@/components/CountrySelect';
 import CvEditor from '@/components/CvEditor';
@@ -14,7 +15,7 @@ import { IAlert, IArrow, ILogout, IOk } from '@/components/Icons';
 import Switch from '@/components/Switch';
 import { canonicalCountry } from '@/lib/countries';
 import { normalizeCv, type CvEntry } from '@/lib/cv';
-import { friendlyError, isMissingColumn } from '@/lib/errors';
+import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 import { parseTags, safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
@@ -69,7 +70,7 @@ export default function ProfilePage() {
       setLoadFail(false);
       try {
         const res = await Promise.race([
-          sb.from('profiles').select('*').eq('id', uid).single(),
+          sb.from('profiles_me').select('username, full_name, country, headline, bio, stack, languages, years_exp, open_to, github_url, website_url, avatar_url, bio_public, cv, cv_public').single(),
           new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 3500)),
         ]);
         if (!alive) return;
@@ -112,20 +113,12 @@ export default function ProfilePage() {
     const base = {
       username: f.username.trim(), full_name: f.full_name.trim() || null, country: f.country.trim() ? canonicalCountry(f.country) : null,
       headline: f.headline.trim().slice(0, 80) || null, bio: f.bio.trim() || null, stack: parseTags(stack.join(',')),
-      github_url: f.github_url.trim() || null, website_url: f.website_url.trim() || null,
+      github_url: safeUrl(f.github_url), website_url: safeUrl(f.website_url),
       languages: parseTags(langs.join(',')), years_exp: years, open_to: open,
     };
-    // Colonnes ajoutées par schema-v6 (bio_public, cv, cv_public) : si elles n'existent pas encore, on enregistre le reste.
-    const extra = { bio_public: bioPublic, cv, cv_public: cvPublic };
-    const sb = supabaseBrowser();
-    let { error } = await sb.from('profiles').update({ ...base, ...extra }).eq('id', userId);
-    let partial = false;
-    if (error && isMissingColumn(error)) {
-      ({ error } = await sb.from('profiles').update(base).eq('id', userId));
-      partial = !error;
-    }
+    const { error } = await supabaseBrowser().from('profiles').update({ ...base, bio_public: bioPublic, cv, cv_public: cvPublic }).eq('id', userId);
     setBusy(false);
-    setMsg(error ? { ok: false, text: error.code === '23505' ? t('err.taken') : friendlyError(error.message, t) } : { ok: true, text: partial ? `${t('p.saved')} ${t('err.partial')}` : t('p.saved') });
+    setMsg(error ? { ok: false, text: error.code === '23505' ? t('err.taken') : friendlyError(error.message, t) } : { ok: true, text: t('p.saved') });
   }
 
   if (!ready) return <FormSkeleton narrow />;
@@ -238,6 +231,8 @@ export default function ProfilePage() {
           <button type="button" className="btn btn-secondary btn-sm" onClick={async () => { await supabaseBrowser().auth.signOut(); router.push('/'); router.refresh(); }}><ILogout />{t('h.logout')}</button>
         </div>
       </section>
+
+      {userId && <AccountPanel userId={userId} />}
     </div>
   );
 }

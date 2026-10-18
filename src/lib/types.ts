@@ -6,6 +6,7 @@ export type QuestionRow = {
   tags: string[];
   accepted_answer_id: string | null;
   created_at: string;
+  updated_at?: string | null;
   profiles: { username: string; country: string | null; avatar_url?: string | null } | null;
   answers?: { count: number }[];
   votes?: number;
@@ -18,17 +19,18 @@ export type AnswerRow = {
   body: string;
   score: number;
   created_at: string;
+  updated_at?: string | null;
   profiles: { username: string; avatar_url?: string | null } | null;
 };
 
-export type ProjectRow = {
+export type CommentRow = {
   id: string;
-  title: string;
-  description: string | null;
-  url: string | null;
-  tags: string[];
+  question_id: string;
+  answer_id: string | null;
+  author_id: string;
+  body: string;
   created_at: string;
-  profiles: { username: string } | null;
+  profiles: { username: string; avatar_url?: string | null } | null;
 };
 
 export type ProfileRow = {
@@ -44,16 +46,17 @@ export type ProfileRow = {
   open_to: string[];
   github_url: string | null;
   website_url: string | null;
-  /** Colonnes ajoutées par schema-v6 : absentes tant que la migration n'est pas passée. */
-  avatar_url?: string | null;
-  bio_public?: boolean | null;
+  avatar_url: string | null;
+  /** Lecture publique : `bio` et `cv` valent null tant que leur propriétaire ne les a pas rendus publics. */
+  bio_public: boolean;
+  cv_public: boolean;
   cv?: unknown;
-  cv_public?: boolean | null;
 };
 
 /** Projet prêt à afficher (lecture). */
 export type ProjectItem = {
   id: string;
+  authorId: string | null;
   title: string;
   description: string | null;
   url: string | null;
@@ -70,7 +73,7 @@ export type Loaded<T> = { data: T; error?: boolean };
 
 /** Ligne d'annuaire (espaces, opportunités, mentors). */
 export type Item = {
-  id?: string; title: string; meta: string; kind: string; tags: string[]; text: string; author?: string; authorAvatar?: string | null;
+  id?: string; title: string; meta: string; kind: string; tags: string[]; text: string; authorId?: string; author?: string; authorAvatar?: string | null;
   en?: { text: string }; flag?: string; members?: number; weekly?: number; href?: string;
   /** Opportunités : dates AAAA-MM-JJ et pays (nom français, ou `ALL` = ouvert à tous). */
   startDate?: string | null; endDate?: string | null; country?: string | null;

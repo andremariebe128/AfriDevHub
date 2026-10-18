@@ -1,11 +1,14 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 import { useState } from 'react';
+import { AVATAR_BUCKET } from '@/lib/image';
+import { storageImage } from '@/lib/utils';
 
 const TONES = ['bg-brand-700', 'bg-leaf-600', 'bg-[#1d6b6a]', 'bg-[#a4531b]', 'bg-brand-900', 'bg-[#6a4a1c]'];
 
 /** Avatar : photo de profil si `src` est fourni (repli sur les initiales si l'image échoue), sinon initiales colorées. */
-export default function Avatar({ name, src, size = 40, className = '' }: { name?: string | null; src?: string | null; size?: number; className?: string }) {
+export default function Avatar({ name, src: raw, size = 40, className = '' }: { name?: string | null; src?: string | null; size?: number; className?: string }) {
+  const src = storageImage(raw, AVATAR_BUCKET);
   const [failed, setFailed] = useState<string | null>(null);
   const label = (name ?? '?').replace(/^@/, '');
   const hash = Array.from(label).reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -19,7 +22,7 @@ export default function Avatar({ name, src, size = 40, className = '' }: { name?
       style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
     >
       {showImg ? (
-        <img src={src!} alt="" width={size} height={size} loading="lazy" decoding="async" onError={() => setFailed(src!)} className="h-full w-full object-cover" />
+        <img src={src!} alt="" width={size} height={size} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(src!)} className="h-full w-full object-cover" />
       ) : initials}
     </span>
   );

@@ -8,7 +8,7 @@ export const OPERATOR = {
   name: process.env.NEXT_PUBLIC_LEGAL_NAME ?? '[Nom de l’éditeur à compléter]',
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '',
   emailFallback: '[adresse e-mail de contact à compléter]',
-  updated: { fr: '5 octobre 2026', en: 'October 5, 2026' },
+  updated: { fr: '14 octobre 2026', en: '14 October 2026' },
 };
 
 /** Un bloc est un paragraphe (string) ou une liste à puces (string[]). {email} devient un lien. */
@@ -21,25 +21,25 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
     slug: 'confidentialite',
     title: 'Politique de confidentialité',
     intro:
-      'AfriDevHub est une plateforme d’échange pour les développeurs africains. Cette page explique quelles données personnelles nous traitons, pourquoi, combien de temps, et comment exercer vos droits. Elle est rédigée en application de la loi n° 2017-20 du 20 avril 2018 portant Code du numérique en République du Bénin (livre consacré à la protection des données à caractère personnel).',
+      'AfriDevHub est une plateforme d’échange pour les développeurs africains. Cette page explique quelles données personnelles nous traitons, pourquoi, combien de temps, et comment exercer vos droits. Elle est rédigée en application de la loi n° 2017-20 du 20 avril 2018 portant Code du numérique en République du Bénin (livre consacré à la protection des données à caractère personnel).',
     sections: [
       {
         id: 'responsable',
-        h: 'Qui est responsable de vos données ?',
+        h: 'Qui est responsable de vos données ?',
         body: [
-          'Le responsable du traitement est l’éditeur d’AfriDevHub : {name}. Pour toute question sur vos données, écrivez-nous à {email}.',
+          'Le responsable du traitement est l’éditeur d’AfriDevHub : {name}. Pour toute question sur vos données, écrivez-nous à {email}.',
         ],
       },
       {
         id: 'donnees',
-        h: 'Quelles données collectons-nous ?',
+        h: 'Quelles données collectons-nous ?',
         body: [
-          'Nous ne collectons que ce qui est nécessaire au fonctionnement du service :',
+          'Nous ne collectons que ce qui est nécessaire au fonctionnement du service :',
           [
-            'Compte : adresse e-mail, mot de passe (jamais stocké en clair, il est géré par le service d’authentification) et pseudo.',
-            'Profil, facultatif : nom, pays, titre, présentation, technologies, langues parlées, années d’expérience, liens GitHub et site web, disponibilités (mentorat, collaboration, mission).',
-            'Contributions : questions, réponses, votes, projets partagés, notes attribuées aux projets, opportunités et annonces de mentorat que vous publiez.',
-            'Données techniques : adresse IP et journaux de connexion traités par nos prestataires d’hébergement pour assurer la sécurité et le bon fonctionnement du service.',
+            'Compte : adresse e-mail, mot de passe (jamais stocké en clair, il est géré par le service d’authentification) et pseudo.',
+            'Profil, facultatif : photo, nom, pays, titre, bio, parcours (CV), technologies, langues parlées, années d’expérience, liens GitHub et site web, disponibilités (mentorat, collaboration, mission).',
+            'Contributions : questions, réponses, votes, projets partagés, notes attribuées aux projets, opportunités et annonces de mentorat que vous publiez.',
+            'Données techniques : adresse IP et journaux de connexion traités par nos prestataires d’hébergement pour assurer la sécurité et le bon fonctionnement du service.',
           ],
           'Nous n’utilisons ni outil de mesure d’audience, ni publicité, ni traceur de tiers. Nous ne demandons aucune donnée sensible (origine, opinions, santé, etc.) et nous vous demandons de ne pas en publier.',
         ],
@@ -49,19 +49,19 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'Ce qui est public, ce qui reste privé',
         body: [
           [
-            'Public : votre pseudo, votre profil et tout ce que vous publiez (questions, réponses, projets, annonces) sont visibles par tous, y compris des moteurs de recherche.',
-            'Privé : votre adresse e-mail et votre mot de passe ne sont jamais affichés. Vos votes sur les réponses ne sont visibles que par vous ; seul le score qui en résulte est public.',
+            'Public : votre pseudo, votre profil (photo, nom, pays, titre, technologies, langues, liens) et tout ce que vous publiez (questions, réponses, projets, annonces) sont visibles par tous, y compris des moteurs de recherche.',
+            'Privé par défaut : votre bio et votre parcours (CV) ne deviennent visibles que si vous activez leur publication dans « Mon profil ». Votre adresse e-mail et votre mot de passe ne sont jamais affichés. Vos votes sur les réponses ne sont visibles que par vous ; seul le score qui en résulte est public.',
           ],
           'Ne publiez pas d’informations que vous ne souhaitez pas rendre publiques (numéro de téléphone, clés d’accès, mots de passe, données de clients).',
         ],
       },
       {
         id: 'finalites',
-        h: 'Pourquoi traitons-nous ces données ?',
+        h: 'Pourquoi traitons-nous ces données ?',
         body: [
           [
-            'Fournir le service : créer et sécuriser votre compte, publier et afficher vos contributions, calculer les scores et la réputation (exécution des conditions d’utilisation).',
-            'Assurer la sécurité et prévenir les abus : lutte contre le spam, la fraude et les contenus illicites (intérêt légitime de l’éditeur).',
+            'Fournir le service : créer et sécuriser votre compte, publier et afficher vos contributions, calculer les scores et la réputation (exécution des conditions d’utilisation).',
+            'Assurer la sécurité et prévenir les abus : lutte contre le spam, la fraude et les contenus illicites (intérêt légitime de l’éditeur).',
             'Améliorer le service à partir de retours volontaires que vous nous envoyez (intérêt légitime).',
             'Respecter nos obligations légales et répondre aux demandes des autorités compétentes.',
           ],
@@ -70,23 +70,23 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
       },
       {
         id: 'conservation',
-        h: 'Combien de temps les conservons-nous ?',
+        h: 'Combien de temps les conservons-nous ?',
         body: [
           [
-            'Compte et profil : tant que votre compte est actif. À sa suppression, votre profil et vos contributions sont supprimés.',
-            'Journaux techniques : conservés par nos prestataires pour une durée limitée, nécessaire à la sécurité.',
-            'Sauvegardes : les données supprimées peuvent subsister dans des sauvegardes pendant un délai limité avant effacement définitif.',
+            'Compte et profil : tant que votre compte est actif. À sa suppression, votre profil et vos contributions sont supprimés.',
+            'Journaux techniques : conservés par nos prestataires pour une durée limitée, nécessaire à la sécurité.',
+            'Sauvegardes : les données supprimées peuvent subsister dans des sauvegardes pendant un délai limité avant effacement définitif.',
           ],
         ],
       },
       {
         id: 'destinataires',
-        h: 'Qui reçoit vos données ?',
+        h: 'Qui reçoit vos données ?',
         body: [
-          'Vos données sont accessibles à l’équipe d’AfriDevHub dans la limite de ses missions, et à nos prestataires techniques, qui agissent sur nos instructions :',
+          'Vos données sont accessibles à l’équipe d’AfriDevHub dans la limite de ses missions, et à nos prestataires techniques, qui agissent sur nos instructions :',
           [
-            'Supabase : base de données et authentification.',
-            'Vercel : hébergement et diffusion du site.',
+            'Supabase : base de données et authentification.',
+            'Vercel : hébergement et diffusion du site.',
           ],
           'Elles peuvent être communiquées à une autorité si la loi l’exige. Aucune autre communication n’est faite sans votre accord.',
         ],
@@ -102,34 +102,34 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'cookies',
         h: 'Cookies et stockage local',
         body: [
-          'AfriDevHub dépose uniquement des éléments strictement nécessaires au service ou que vous demandez expressément. Ils ne servent ni au suivi ni à la publicité, et ne requièrent donc pas de bandeau de consentement :',
+          'AfriDevHub dépose uniquement des éléments strictement nécessaires au service ou que vous demandez expressément. Ils ne servent ni au suivi ni à la publicité, et ne requièrent donc pas de bandeau de consentement :',
           [
-            'Session de connexion (stockage local du navigateur, géré par Supabase) : vous garder connecté·e. Supprimée à la déconnexion.',
-            'adh-lang (cookie, 1 an) : mémoriser votre langue (français ou anglais).',
-            'adh-theme (stockage local) : mémoriser votre thème clair, sombre ou système.',
-            'adh-lite (stockage local) : mémoriser le mode « Éco data ».',
-            'Cache hors ligne (service worker) : afficher la page hors ligne et accélérer le chargement des fichiers statiques.',
+            'Session de connexion (cookies sb-…, gérés par Supabase) : vous garder connecté·e. Supprimée à la déconnexion.',
+            'adh-lang (cookie, 1 an, SameSite) : mémoriser votre langue (français ou anglais).',
+            'adh-theme (stockage local) : mémoriser votre thème clair, sombre ou système.',
+            'adh-lite (stockage local) : mémoriser le mode « Éco data ».',
+            'Cache hors ligne (service worker) : afficher la page hors ligne et accélérer le chargement des fichiers statiques. Aucune page ni donnée de compte n’y est conservée.',
           ],
-          'Vous pouvez effacer ces éléments à tout moment depuis les réglages de votre navigateur ; certaines fonctions (connexion, préférences) cesseront alors de fonctionner.',
+          'Vous pouvez effacer ces éléments à tout moment depuis les réglages de votre navigateur ; certaines fonctions (connexion, préférences) cesseront alors de fonctionner.',
         ],
       },
       {
         id: 'securite',
         h: 'Sécurité',
         body: [
-          'Nous protégeons vos données par des mesures techniques et organisationnelles : connexion chiffrée (HTTPS), mots de passe protégés par le service d’authentification, règles d’accès à la base limitant chaque utilisateur à ses propres données modifiables, accès restreint de l’équipe. Aucun système n’est infaillible. En cas de violation de données, nous informerons l’autorité compétente et les personnes concernées dans les conditions prévues par la loi.',
+          'Nous protégeons vos données par des mesures techniques et organisationnelles : connexion chiffrée (HTTPS), mots de passe protégés par le service d’authentification, règles d’accès à la base limitant chaque utilisateur à ses propres données modifiables, accès restreint de l’équipe. Aucun système n’est infaillible. En cas de violation de données, nous informerons l’autorité compétente et les personnes concernées dans les conditions prévues par la loi.',
         ],
       },
       {
         id: 'droits',
         h: 'Vos droits',
         body: [
-          'Conformément au Code du numérique, vous disposez des droits suivants sur vos données :',
+          'Conformément au Code du numérique, vous disposez des droits suivants sur vos données :',
           [
-            'Accès : savoir quelles données nous détenons et en obtenir une copie.',
-            'Rectification : corriger des données inexactes. Vous pouvez modifier la plupart des informations depuis la page « Mon profil ».',
-            'Opposition : vous opposer à un traitement pour un motif légitime.',
-            'Suppression : demander l’effacement de vos données et de votre compte.',
+            'Accès : savoir quelles données nous détenons et en obtenir une copie.',
+            'Rectification : corriger des données inexactes. Vous pouvez modifier la plupart des informations depuis la page « Mon profil ».',
+            'Opposition : vous opposer à un traitement pour un motif légitime.',
+            'Suppression : demander l’effacement de vos données et de votre compte.',
             'Limitation et portabilité, lorsque la loi le prévoit.',
             'Retrait de votre consentement, à tout moment, lorsque le traitement repose sur celui-ci.',
           ],
@@ -154,7 +154,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'modifications',
         h: 'Modifications de cette politique',
         body: [
-          'Nous pouvons mettre à jour cette politique, par exemple si le service ou la loi évolue. La date de dernière mise à jour figure en haut de la page ; en cas de changement important, nous vous en informerons sur le site.',
+          'Nous pouvons mettre à jour cette politique, par exemple si le service ou la loi évolue. La date de dernière mise à jour figure en haut de la page ; en cas de changement important, nous vous en informerons sur le site.',
         ],
       },
     ],
@@ -170,7 +170,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'objet',
         h: 'Objet du service',
         body: [
-          'AfriDevHub est une plateforme gratuite d’échange entre développeurs : questions et réponses, partage de projets, espaces par pays et technologie, opportunités et mise en relation avec des mentors. Elle est éditée par {name}.',
+          'AfriDevHub est une plateforme gratuite d’échange entre développeurs : questions et réponses, partage de projets, espaces par pays et technologie, opportunités et mise en relation avec des mentors. Elle est éditée par {name}.',
         ],
       },
       {
@@ -188,12 +188,12 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'regles',
         h: 'Règles de la communauté',
         body: [
-          'Vous vous engagez à ne pas publier de contenu :',
+          'Vous vous engagez à ne pas publier de contenu :',
           [
-            'illicite, discriminatoire, haineux, harcelant, menaçant ou diffamatoire ;',
-            'contraire à la vie privée d’autrui (données personnelles, conversations privées publiées sans accord) ;',
-            'qui porte atteinte à des droits de propriété intellectuelle, ou qui contient du code malveillant ;',
-            'de nature commerciale non sollicitée, trompeur, frauduleux ou répétitif (spam) ;',
+            'illicite, discriminatoire, haineux, harcelant, menaçant ou diffamatoire ;',
+            'contraire à la vie privée d’autrui (données personnelles, conversations privées publiées sans accord) ;',
+            'qui porte atteinte à des droits de propriété intellectuelle, ou qui contient du code malveillant ;',
+            'de nature commerciale non sollicitée, trompeur, frauduleux ou répétitif (spam) ;',
             'qui contient des clés d’accès, mots de passe ou données de clients.',
           ],
           'Soyez courtois·e, citez vos sources et acceptez que vos questions et réponses soient améliorées par la communauté.',
@@ -204,7 +204,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'Vos contenus',
         body: [
           'Vous restez propriétaire de ce que vous publiez. En le publiant, vous accordez à AfriDevHub une licence non exclusive, gratuite et mondiale pour l’héberger, l’afficher, le reproduire techniquement et le rendre accessible au public (y compris aux moteurs de recherche) dans le cadre du service, pour la durée de sa publication.',
-          'Vous garantissez avoir le droit de publier ces contenus. Les extraits de code et réponses sont partagés pour aider les autres : indiquez la licence applicable si vous reprenez un code qui n’est pas le vôtre.',
+          'Vous garantissez avoir le droit de publier ces contenus. Les extraits de code et réponses sont partagés pour aider les autres : indiquez la licence applicable si vous reprenez un code qui n’est pas le vôtre.',
         ],
       },
       {
@@ -219,7 +219,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'Réponses, projets et opportunités',
         body: [
           [
-            'Les réponses viennent de membres de la communauté et ne sont pas vérifiées : testez avant de mettre en production et ne les considérez pas comme un conseil professionnel, juridique ou financier.',
+            'Les réponses viennent de membres de la communauté et ne sont pas vérifiées : testez avant de mettre en production et ne les considérez pas comme un conseil professionnel, juridique ou financier.',
             'Les opportunités, missions et annonces de mentorat sont publiées par des tiers. Vérifiez leur sérieux avant de communiquer des informations ou d’engager de l’argent. AfriDevHub n’est pas partie aux accords conclus entre membres.',
           ],
         ],
@@ -235,7 +235,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'disponibilite',
         h: 'Disponibilité et responsabilité',
         body: [
-          'Le service est fourni « en l’état », sans garantie de disponibilité continue : des interruptions peuvent survenir (maintenance, panne, coupure réseau). Dans la limite permise par la loi, l’éditeur n’est pas responsable des dommages indirects, de la perte de données ou des contenus publiés par les membres. Ces limites ne s’appliquent pas aux cas où la loi interdit de les prévoir.',
+          'Le service est fourni « en l’état », sans garantie de disponibilité continue : des interruptions peuvent survenir (maintenance, panne, coupure réseau). Dans la limite permise par la loi, l’éditeur n’est pas responsable des dommages indirects, de la perte de données ou des contenus publiés par les membres. Ces limites ne s’appliquent pas aux cas où la loi interdit de les prévoir.',
         ],
       },
       {
@@ -254,13 +254,13 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         id: 'droit',
         h: 'Droit applicable et litiges',
         body: [
-          'Les présentes conditions sont régies par le droit béninois. En cas de différend, une solution amiable est recherchée en priorité ; à défaut, les juridictions béninoises compétentes seront saisies, sans préjudice des droits dont vous disposez en tant que consommateur dans votre pays.',
+          'Les présentes conditions sont régies par le droit béninois. En cas de différend, une solution amiable est recherchée en priorité ; à défaut, les juridictions béninoises compétentes seront saisies, sans préjudice des droits dont vous disposez en tant que consommateur dans votre pays.',
         ],
       },
       {
         id: 'evolution',
         h: 'Évolution des conditions',
-        body: ['Nous pouvons modifier ces conditions. La date de mise à jour figure en haut de la page ; continuer à utiliser le service après une modification vaut acceptation.'],
+        body: ['Nous pouvons modifier ces conditions. La date de mise à jour figure en haut de la page ; continuer à utiliser le service après une modification vaut acceptation.'],
       },
     ],
   },
@@ -273,7 +273,7 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
       {
         id: 'editeur',
         h: 'Éditeur du site',
-        body: [['Dénomination : {name}', 'Contact : {email}']],
+        body: [['Dénomination : {name}', 'Contact : {email}']],
       },
       {
         id: 'publication',
@@ -285,8 +285,8 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'Hébergement et services techniques',
         body: [
           [
-            'Hébergement et diffusion du site : Vercel Inc. (vercel.com).',
-            'Base de données et authentification : Supabase (supabase.com).',
+            'Hébergement et diffusion du site : Vercel Inc. (vercel.com).',
+            'Base de données et authentification : Supabase (supabase.com).',
           ],
         ],
       },
@@ -302,9 +302,9 @@ const FR: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'Crédits',
         body: [
           [
-            'Icônes : Lucide (licence ISC).',
-            'Drapeaux : country-flag-icons (licence MIT).',
-            'Polices : Bricolage Grotesque, Instrument Sans et JetBrains Mono (licence SIL Open Font).',
+            'Icônes : Lucide (licence ISC).',
+            'Drapeaux : country-flag-icons (licence MIT).',
+            'Polices : Bricolage Grotesque, Instrument Sans et JetBrains Mono (licence SIL Open Font).',
           ],
         ],
       },
@@ -341,7 +341,7 @@ const EN: Record<LegalDoc['slug'], LegalDoc> = {
           'We only collect what is needed to run the service:',
           [
             'Account: email address, password (never stored in clear text, it is handled by the authentication service) and username.',
-            'Profile, optional: name, country, headline, bio, technologies, spoken languages, years of experience, GitHub and website links, availability (mentoring, collaboration, work).',
+            'Profile, optional: photo, name, country, headline, bio, background (CV), technologies, spoken languages, years of experience, GitHub and website links, availability (mentoring, collaboration, work).',
             'Contributions: questions, answers, votes, shared projects, project ratings, opportunities and mentoring listings you publish.',
             'Technical data: IP address and connection logs processed by our hosting providers to keep the service secure and running.',
           ],
@@ -353,8 +353,8 @@ const EN: Record<LegalDoc['slug'], LegalDoc> = {
         h: 'What is public, what stays private',
         body: [
           [
-            'Public: your username, your profile and everything you publish (questions, answers, projects, listings) are visible to everyone, including search engines.',
-            'Private: your email address and password are never displayed. Your votes on answers are visible only to you; only the resulting score is public.',
+            'Public: your username, your profile (photo, name, country, headline, technologies, languages, links) and everything you publish (questions, answers, projects, listings) are visible to everyone, including search engines.',
+            'Private by default: your bio and background (CV) become visible only if you turn on their publication in “My profile”. Your email address and password are never displayed. Your votes on answers are visible only to you; only the resulting score is public.',
           ],
           'Do not publish information you do not want to make public (phone number, access keys, passwords, customer data).',
         ],
@@ -405,11 +405,11 @@ const EN: Record<LegalDoc['slug'], LegalDoc> = {
         body: [
           'AfriDevHub only stores items strictly necessary to the service or that you explicitly request. They are not used for tracking or advertising, so no consent banner is required:',
           [
-            'Login session (browser local storage, managed by Supabase): keeps you signed in. Removed when you sign out.',
-            'adh-lang (cookie, 1 year): remembers your language (French or English).',
+            'Login session (sb-… cookies, managed by Supabase): keeps you signed in. Removed when you sign out.',
+            'adh-lang (cookie, 1 year, SameSite): remembers your language (French or English).',
             'adh-theme (local storage): remembers your light, dark or system theme.',
             'adh-lite (local storage): remembers the “Data saver” mode.',
-            'Offline cache (service worker): shows the offline page and speeds up loading of static files.',
+            'Offline cache (service worker): shows the offline page and speeds up loading of static files. No page or account data is kept in it.',
           ],
           'You can clear these items at any time from your browser settings; some features (login, preferences) will then stop working.',
         ],

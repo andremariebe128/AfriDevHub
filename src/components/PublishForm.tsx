@@ -9,7 +9,7 @@ import { IAlert, IOk } from '@/components/Icons';
 import ListingRow from '@/components/ListingRow';
 import { norm } from '@/lib/countries';
 import { todayISO } from '@/lib/dates';
-import { friendlyError, isMissingColumn } from '@/lib/errors';
+import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 import { CHALLENGE_KIND, oppKind } from '@/lib/utils';
 
@@ -26,7 +26,6 @@ export default function PublishForm() {
   const [tags, setTags] = useState<string[]>([]);
   const [country, setCountry] = useState('');
   const [today, setToday] = useState<string | null>(null);
-  const [partial, setPartial] = useState(false);
   const [msg, setMsg] = useState<'ok' | 'err' | null>(null);
   const [errText, setErrText] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
@@ -40,22 +39,16 @@ export default function PublishForm() {
     if (!uid) return;
     setTouched(true);
     if (f.kind.trim().length < 2 || f.title.trim().length < 3 || (isOpp && datesBad)) return;
-    setBusy(true); setMsg(null); setErrText(null); setPartial(false);
+    setBusy(true); setMsg(null); setErrText(null);
     const base = { section, kind: f.kind.trim(), title: f.title.trim(), meta: f.meta.trim(), body: f.body.trim(), tags: tags.slice(0, 6), author_id: uid };
     const extra = isOpp ? { start_date: f.start || null, end_date: f.end || null, country: country || null } : {};
-    const usedExtra = Object.values(extra).some((v) => v);
     const sb = supabaseBrowser();
-    let { error } = await sb.from('listings').insert({ ...base, ...extra });
-    // Tolérance : colonnes start_date / end_date / country absentes tant que schema-v6 n'est pas appliqué -> on retente sans.
-    if (error && isMissingColumn(error) && Object.keys(extra).length) {
-      ({ error } = await sb.from('listings').insert(base));
-      if (!error && usedExtra) setPartial(true);
-    }
+    const { error } = await sb.from('listings').insert({ ...base, ...extra });
     setBusy(false);
     setMsg(error ? 'err' : 'ok');
     if (error) setErrText(friendlyError(error.message, t)); else window.scrollTo({ top: 0 });
   }
-  function again() { setF(EMPTY); setTags([]); setCountry(''); setPartial(false); setMsg(null); setTouched(false); }
+  function again() { setF(EMPTY); setTags([]); setCountry(''); setMsg(null); setTouched(false); }
 
   if (uid === undefined) return <FormSkeleton />;
   if (uid === null) {
@@ -67,7 +60,6 @@ export default function PublishForm() {
       <div className="mx-auto max-w-xl rounded-lg border border-leaf-500/40 bg-leaf-500/[0.06] p-6" role="status">
         <h1 className="flex items-center gap-2 text-xl font-bold text-success"><IOk className="h-5 w-5" />{t('pub.ok.h')}</h1>
         <p className="mt-2 text-sm text-muted">{t('pub.ok')}</p>
-        {partial && <p className="mt-3 flex items-start gap-2 rounded-md border border-gold-400/40 bg-gold-400/10 px-3 py-2 text-sm text-warm"><IAlert className="mt-0.5 h-4 w-4 shrink-0" />{t('pub.partial')}</p>}
         <div className="mt-5 flex flex-wrap gap-2">
           <Link href={section === 'mentor' ? '/mentors' : '/opportunites'} className="btn btn-primary">{t('pub.see')}</Link>
           <button type="button" onClick={again} className="btn btn-secondary">{t('pub.again')}</button>

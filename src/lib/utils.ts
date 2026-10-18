@@ -16,6 +16,9 @@ export function safeUrl(u?: string | null): string | null {
   if (!u) return null;
   try { const x = new URL(u.trim()); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch { return null; }
 }
+/** Mot de passe : 8 caractères minimum, au moins une lettre et un chiffre. */
+export const passwordOk = (p: string) => p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p);
+
 export const compact = (n: number) => (n >= 1000 ? (n / 1000).toFixed(1).replace(/.0$/, '') + 'k' : String(n));
 
 export const POPULAR_TAGS = [
@@ -60,4 +63,33 @@ export function plainPreview(md: string, max = 170): string {
     .replace(/\s+/g, ' ')
     .trim();
   return t.length > max ? t.slice(0, max).replace(/\s+\S*$/, '') + '…' : t;
+}
+
+/**
+ * Chemin interne sûr pour une redirection après connexion (paramètre `next`), sinon `fallback`.
+ * Refuse tout ce qui n'est pas un chemin du site : `//hote`, `/\hote`, `https://…`, `javascript:`, caractères de contrôle.
+ */
+export function safeNext(raw: string | null | undefined, fallback = '/questions'): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(raw)) return fallback;
+  try {
+    const u = new URL(raw, 'http://interne.invalid');
+    if (u.origin !== 'http://interne.invalid') return fallback;
+    const path = u.pathname.replace(/\/+$/, '') || '/';
+    if (path === '/login') return fallback;
+    return u.pathname + u.search;
+  } catch { return fallback; }
+}
+
+/** Adresse publique d'un bucket Supabase Storage (seule origine d'images autorisée en dehors du site). */
+export function storagePrefix(bucket: string): string | null {
+  const base = safeUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  return base ? `${new URL(base).origin}/storage/v1/object/public/${bucket}/` : null;
+}
+
+/** URL d'image valide uniquement si elle pointe vers le bucket indiqué (sinon null). */
+export function storageImage(u: string | null | undefined, bucket: string): string | null {
+  const url = safeUrl(u);
+  const prefix = storagePrefix(bucket);
+  if (!url || !prefix || !url.startsWith(prefix) || url.slice(prefix.length).includes('..')) return null;
+  return url;
 }

@@ -9,6 +9,7 @@ import { GlassPanel, LiquidGlassBackground } from '@/components/LiquidGlass';
 import { IAlert, IEye, IEyeOff, IGlobe, IOffline, IChat, IOk } from '@/components/Icons';
 import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
+import { passwordOk, safeNext } from '@/lib/utils';
 
 const USER_RE = /^[a-zA-Z0-9_.-]{3,}$/;
 const CODE_CHARS = ['<', '>', '{', '}', ';', '/', '=', '(', ')', '*', '#'];
@@ -128,7 +129,7 @@ export default function LoginPage() {
     if (signup && !USER_RE.test(username.trim())) {
       return setError(t('err.user'));
     }
-    if (password.length < 6) return setError(t('err.pass'));
+    if (signup ? !passwordOk(password) : password.length === 0) return setError(signup ? t('err.pass') : t('err.creds'));
     setBusy(true);
     const sb = supabaseBrowser();
     if (signup) {
@@ -145,9 +146,20 @@ export default function LoginPage() {
       setBusy(false);
       if (err) return setError(friendlyError(err.message, t));
     }
-    const nx = new URLSearchParams(window.location.search).get('next');
-    router.push(nx && nx.startsWith('/') && !nx.startsWith('//') ? nx : '/questions');
+    router.push(safeNext(new URLSearchParams(window.location.search).get('next')));
     router.refresh();
+  }
+
+  async function forgot() {
+    setError(null);
+    setInfo(null);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return setError(t('login.reset.need'));
+    setBusy(true);
+    try {
+      await supabaseBrowser().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset` });
+    } catch { /* même réponse dans tous les cas : ne révèle pas l'existence du compte */ }
+    setBusy(false);
+    setInfo(t('login.reset.sent'));
   }
 
   const tab = (on: boolean) =>
@@ -219,7 +231,7 @@ export default function LoginPage() {
                     <div className="dev-reveal-inner">
                       <ul id="lg-rules" className="space-y-1.5">
                         <Rule ok={USER_RE.test(username.trim())}>{t('login.rule.user')}</Rule>
-                        <Rule ok={password.length >= 6}>{t('login.rule.pass')}</Rule>
+                        <Rule ok={passwordOk(password)}>{t('login.rule.pass')}</Rule>
                       </ul>
                     </div>
                   </div>
@@ -245,6 +257,11 @@ export default function LoginPage() {
                       {busy ? t('login.busy') : signup ? t('login.create') : t('login.in')}
                     </button>
                   </div>
+                  {!signup && (
+                    <p className="text-center">
+                      <button type="button" onClick={forgot} disabled={busy} className="min-h-11 text-sm font-medium text-accent-fg underline underline-offset-2 md:min-h-9">{t('login.forgot')}</button>
+                    </p>
+                  )}
                 </form>
               </div>
             </div>

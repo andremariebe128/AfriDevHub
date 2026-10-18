@@ -1,5 +1,7 @@
 /* AfriDevHub - service worker minimal : réseau d'abord, repli sur le cache hors ligne */
-const CACHE = 'afridevhub-v1';
+const CACHE = 'afridevhub-v2';
+// Seules les pages publiques sont gardées hors ligne : jamais une page personnelle (profil, notifications…).
+const PUBLIC = ['/', '/login', '/download', '/conditions', '/mentions-legales', '/confidentialite'];
 const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', (event) => {
@@ -25,11 +27,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
+          if (res.ok && PUBLIC.includes(url.pathname)) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
           return res;
         })
-        .catch(async () => (await caches.match(req)) || caches.match(OFFLINE_URL)),
+        .catch(async () => (PUBLIC.includes(url.pathname) && (await caches.match(req))) || caches.match(OFFLINE_URL)),
     );
     return;
   }

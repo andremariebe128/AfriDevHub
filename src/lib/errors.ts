@@ -2,17 +2,6 @@ import type { Key } from '@/lib/i18n';
 
 type Err = { message?: string; code?: string; statusCode?: string | number; status?: number } | null | undefined;
 
-/**
- * Vrai si Supabase signale une colonne inconnue : la migration (docs/backend-a-faire.md) n'est pas encore passée.
- * Codes Postgres 42703 (undefined_column) et PostgREST PGRST204 / PGRST200 (colonne ou relation introuvable dans le cache de schéma).
- */
-export function isMissingColumn(err: Err): boolean {
-  if (!err) return false;
-  if (err.code === '42703' || err.code === 'PGRST204') return true;
-  const m = (err.message ?? '').toLowerCase();
-  return (m.includes('column') && (m.includes('does not exist') || m.includes('could not find'))) || m.includes('schema cache');
-}
-
 /** Bucket de stockage absent. */
 export function isBucketMissing(err: Err): boolean {
   const m = (err?.message ?? '').toLowerCase();

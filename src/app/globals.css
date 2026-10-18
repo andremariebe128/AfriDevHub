@@ -464,55 +464,13 @@ html[data-lite] .dev-reflow { animation: none; }
 }
 
 /* =====================================================================
-   Variantes d'animation — page /animations (demos live)
+   Animations de la page de connexion
    ===================================================================== */
 
-/* 1. Verre qui respire : le panneau gonfle doucement */
-@keyframes anim-breathe-kf {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.025); }
-}
-.anim-breathe { animation: anim-breathe-kf 6s ease-in-out infinite; }
-
-/* 2. Reflet lumineux : un faisceau balaie le panneau */
-.anim-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.35) 48%, transparent 60%);
-  transform: translateX(-120%);
-  animation: anim-sheen-kf 5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes anim-sheen-kf {
-  0%, 55% { transform: translateX(-120%); }
-  85%, 100% { transform: translateX(120%); }
-}
-
-/* 5. Scanline CRT : une ligne traverse le panneau */
-.anim-scanline::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: -8%;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgb(95 169 211 / 0.6), transparent);
-  filter: blur(1px);
-  animation: anim-scanline-kf 3s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes anim-scanline-kf {
-  0% { top: -4%; opacity: 0; }
-  15% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { top: 104%; opacity: 0; }
-}
-
-/* 6. Checkmark anime : le tick se dessine */
+/* Coche animée : le tracé se dessine */
 @keyframes check-draw { to { stroke-dashoffset: 0; } }
 
-/* 9. Bande kente qui se dessine : le fond se dévoile */
+/* Bande kente : le fond se dévoile */
 .anim-kente-bar {
   background: repeating-linear-gradient(90deg, #1873a1 0 24px, #279160 24px 36px, #dc722d 36px 48px, #288281 48px 52px, #eb9f2f 52px 64px);
   background-size: 0% 100%;
@@ -520,12 +478,7 @@ html[data-lite] .dev-reflow { animation: none; }
 }
 @keyframes anim-kente-kf { from { background-size: 0% 100%; } to { background-size: 100% 100%; } }
 
-/* 10. Losanges tournants */
-.anim-spin-slow { animation: anim-spin-kf 8s linear infinite; }
-.anim-spin-slower { animation: anim-spin-kf 12s linear infinite reverse; }
-@keyframes anim-spin-kf { to { transform: rotate(405deg); } }
-
-/* 12. Particules de code : les caracteres montent et s estompent */
+/* Particules de code : les caractères montent et s'estompent */
 .anim-particle {
   bottom: -10%;
   opacity: 0;
@@ -538,7 +491,7 @@ html[data-lite] .dev-reflow { animation: none; }
   100% { transform: translateY(-220px) rotate(25deg); opacity: 0; }
 }
 
-/* 11. Slide horizontal du formulaire au changement de mode */
+/* Glissement horizontal du formulaire au changement de mode */
 .anim-slide-left { animation: anim-slide-left-kf 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 .anim-slide-right { animation: anim-slide-right-kf 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @keyframes anim-slide-left-kf {
@@ -550,20 +503,10 @@ html[data-lite] .dev-reflow { animation: none; }
   to { opacity: 1; transform: translateX(0); }
 }
 
-/* Arret des animations en mode leger / reduced-motion */
-html[data-lite] .anim-breathe,
-html[data-lite] .anim-sheen::after,
-html[data-lite] .anim-scanline::after,
-html[data-lite] .anim-spin-slow,
-html[data-lite] .anim-spin-slower,
+/* Arrêt des animations en mode éco data et avec prefers-reduced-motion */
 html[data-lite] .anim-particle { animation: none !important; }
 html[data-lite] .anim-kente-bar { background-size: 100% 100%; animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .anim-breathe,
-  .anim-sheen::after,
-  .anim-scanline::after,
-  .anim-spin-slow,
-  .anim-spin-slower,
   .anim-particle { animation: none !important; }
   .anim-kente-bar { background-size: 100% 100%; animation: none; }
 }

@@ -23,7 +23,7 @@ export default function OwnerPrivate({ profileId, part, publicShown }: { profile
         const sb = supabaseBrowser();
         const { data: s } = await sb.auth.getSession();
         if (s.session?.user.id !== profileId) return;
-        const { data } = await sb.from('profiles').select('*').eq('id', profileId).maybeSingle();
+        const { data } = await sb.from('profiles_me').select('bio, cv').maybeSingle();
         if (!alive || !data) return;
         if (part === 'bio' && typeof data.bio === 'string' && data.bio.trim()) setBio(data.bio);
         if (part === 'cv') setCv(normalizeCv(data.cv));

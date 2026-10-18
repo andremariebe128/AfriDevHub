@@ -48,10 +48,15 @@ Créer un projet, puis exécuter **dans cet ordre** dans le SQL Editor :
 3. `supabase/schema-v3.sql` : profils enrichis
 4. `supabase/schema-v4.sql` : `project_ratings` (étoiles) et `projects.cover_url`
 5. `supabase/schema-v5.sql` : `spaces` (référentiel pays/techno), `notifications` (triggers), vue `contributors`
+6. `supabase/schema-v6.sql` : correctifs et index
+7. `supabase/schema-v7-securite.sql` : durcissement (privilèges par colonne, vues `profiles_public` / `profiles_me`, commentaires, signalements, blocages, buckets Storage `avatars` / `covers` / `post-images`, fonctions `export_my_data` et `delete_my_account`). **À exécuter après v6.**
+
+Fonction Edge `api` (API mobile et intégrations) : voir `../Flutter/supabase/functions/api` et `API.md`. Déploiement : `supabase functions deploy api`.
 
 **Accès réservé** : sans connexion, seules `/`, `/login`, `/download` et les pages légales sont ouvertes (`src/proxy.ts`). Les liens de téléchargement se règlent via `NEXT_PUBLIC_DL_*` dans `.env`.
 
 Ne pas rejouer un fichier déjà exécuté (les `create policy` échouent si elles existent).
+Authentication > URL Configuration : ajouter `<URL du site>/reset` dans « Redirect URLs » (réinitialisation du mot de passe).
 Authentication > Providers > Email : en développement, désactiver « Confirm email » ; en production, garder la confirmation et renseigner l'URL du site (§5).
 
 ### 3.2 Lancer en local
@@ -60,7 +65,7 @@ cp .env.example .env.local     # URL + clé anon Supabase
 npm install
 npm run dev                    # http://localhost:3000
 ```
-Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`. Elles sont intégrées au build : tout changement impose un **redéploiement**. Ne jamais exposer la clé `service_role`.
+Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SITE_URL`. Facultatives : `NEXT_PUBLIC_CONTACT_EMAIL`, `NEXT_PUBLIC_LEGAL_NAME`, `NEXT_PUBLIC_DL_*` (liens de téléchargement) et, pour `/api/version` (mise à jour des apps), `LATEST_VERSION`, `MIN_VERSION`, `RELEASE_NOTES`. Elles sont intégrées au build : tout changement impose un **redéploiement**. Ne jamais exposer la clé `service_role`.
 
 ### 3.3 Tester la PWA et le mobile
 `npm run build && npm start` (le service worker n'est actif qu'en production). Sur téléphone : `npm run dev -- -H 0.0.0.0` puis `http://IP-DU-PC:3000`. L'installation PWA exige HTTPS : à tester sur la version déployée.
@@ -81,7 +86,7 @@ Flutter Android/Windows ──┐
 ```
 - Lectures publiques côté serveur avec la clé anon (autorisées par RLS) : questions indexables.
 - Actions (poser, répondre, voter, noter, publier) côté client avec la session de l'utilisateur, protégées par RLS.
-- Traductions : `src/lib/i18n.ts`. Données de démonstration : `src/lib/seed.ts` (utilisées si `listings` est vide).
+- Traductions : `src/lib/i18n.ts`.
 - Service worker `public/sw.js` : page hors ligne et fichiers statiques.
 
 ## 5. Déploiement
@@ -107,7 +112,7 @@ Flutter Android/Windows ──┐
 
 | Critère | Poids | Réponse du projet |
 |---|---|---|
-| Pertinence et utilité | 25 % | Problème réel (devs dispersés, réalités locales ignorées) ; parcours complet ; données de démo crédibles |
+| Pertinence et utilité | 25 % | Problème réel (devs dispersés, réalités locales ignorées) ; parcours complet  |
 | Qualité technique | 30 % | Architecture, RLS, sécurité, qualité du code, **maîtrise de l'équipe y compris sur le code produit avec l'IA**, **licences conformes** |
 | Expérience utilisateur | 20 % | Fidélité à la maquette, mobile d'abord, accessibilité |
 | Innovation et originalité | 15 % | Mode éco data, espaces pays/techno, opportunités locales, pouls du continent |
@@ -218,9 +223,9 @@ Connexion, question posée, réponse, vote et projet noté fonctionnent contre l
 
 **Données personnelles :** collecte minimale (e-mail, pseudo, pays, profil volontaire) ; page « Confidentialité » courte ; vérifier les obligations légales applicables au Bénin avant soumission.
 
-## 11. Données de démonstration
+## 11. Contenu de départ
 
-La démo ne doit jamais être vide : 6 à 8 comptes de test (pays et stacks variés), au moins 12 questions dont 4 résolues, 6 projets notés, 8 opportunités réelles, 4 mentors. Contenu réel ou clairement marqué « exemple » ; ne pas inventer d'organisations ni d'événements existants.
+Aucune donnée fictive n'est livrée : les espaces pays et techno proviennent du référentiel des 54 pays et de la table `spaces`, le reste est créé par les membres. Pour une démonstration, créer de vrais comptes et publier du contenu réel.
 
 ## 12. Calendrier
 
@@ -266,7 +271,7 @@ URL publique testée sur mobile · dépôt propre avec ce README et la licence �
 | **Trois clients (web, Android, Windows) en 25 jours** | Élevée | Élevé | Périmètre Flutter réduit, go/no-go le 18 oct, web prioritaire |
 | Équipe incapable d'expliquer le code généré | Moyenne | Élevé (30 %) | Revues croisées, documentation d'architecture |
 | RLS trop ouverte ou trop fermée | Moyenne | Élevé | Tests avec 2 comptes |
-| Démo vide | Moyenne | Élevé | §11 |
+| Démo vide | Moyenne | Élevé | Inviter les premiers membres avant la soumission (§11) |
 | Authentification mobile (redirection e-mail) | Moyenne | Moyen | Mot de passe sans confirmation ou OTP côté Flutter |
 | `.exe` impossible à construire hors Windows | Certaine | Moyen | Prévoir une machine Windows |
 | Licences (images, polices, paquets) | Faible | Moyen | Audit en S3 |

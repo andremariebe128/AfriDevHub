@@ -1,11 +1,10 @@
 import { AFRICA, canonicalCountry, countryBlurb, countryLabel, findCountry } from '@/lib/countries';
 import { dayOrNull } from '@/lib/dates';
-import { isMissingColumn } from '@/lib/errors';
 import type { Locale } from '@/lib/i18n';
 import { normalizeCv } from '@/lib/cv';
 import { supabaseServer } from '@/lib/supabase';
 import { safeUrl } from '@/lib/utils';
-import type { AnswerRow, Item, Loaded, ProfileRow, ProjectItem, QuestionRow } from '@/lib/types';
+import type { AnswerRow, CommentRow, Item, Loaded, ProfileRow, ProjectItem, QuestionRow } from '@/lib/types';
 
 /* Lectures serveur. Aucune donnée fictive : en cas d'échec, la liste est vide et `error` vaut true. */
 
@@ -19,28 +18,13 @@ function withTimeout<T>(p: PromiseLike<T>, ms = TIMEOUT_MS): Promise<T> {
 const ok = <T,>(data: T): Loaded<T> => ({ data });
 const fail = <T,>(data: T): Loaded<T> => ({ data, error: true });
 
-/**
- * Tolérance : `profiles.avatar_url` n'existe qu'après la migration schema-v6. On tente la lecture avec la colonne ;
- * si Supabase répond « colonne inconnue », on relit sans elle (et on évite de réessayer pendant une minute).
- */
-let avatarOffUntil = 0;
-async function withAvatar<R extends { error: unknown }>(run: (avatar: boolean) => PromiseLike<R>): Promise<R> {
-  if (Date.now() > avatarOffUntil) {
-    const r = await run(true);
-    if (!r.error) return r;
-    if (!isMissingColumn(r.error as { message?: string; code?: string })) return r;
-    avatarOffUntil = Date.now() + 60_000;
-  }
-  return run(false);
-}
 /** Les requêtes sont composées dynamiquement : on évite l'analyse de type du `select`. */
 const sq = (s: string): string => s;
-const pcols = (avatar: boolean, base: string) => (avatar ? `${base}, avatar_url` : base);
 
 /* ------------------------------------------------------- Annuaires (listings) */
 
 type ListingRowDb = {
-  id?: string; title: string; meta: string | null; kind: string; tags: string[] | null; body: string | null;
+  id?: string; author_id?: string | null; title: string; meta: string | null; kind: string; tags: string[] | null; body: string | null;
   start_date?: string | null; end_date?: string | null; country?: string | null;
   profiles?: { username: string; avatar_url?: string | null } | { username: string; avatar_url?: string | null }[] | null;
 };
@@ -48,15 +32,14 @@ type ListingRowDb = {
 export async function loadItems(section: 'opportunity' | 'mentor'): Promise<Item[]> {
   try {
     const sb = supabaseServer();
-    const { data, error } = await withAvatar((a) =>
-      withTimeout(sb.from('listings').select(sq(`*, profiles(${pcols(a, 'username')})`)).eq('section', section).order('created_at', { ascending: false }).limit(100)));
+    const { data, error } = await withTimeout(sb.from('listings').select('*, profiles(username, avatar_url)').eq('section', section).order('created_at', { ascending: false }).limit(100));
     if (error) return [];
     return ((data ?? []) as unknown as ListingRowDb[]).map((r) => {
       const pr = Array.isArray(r.profiles) ? r.profiles[0] : r.profiles;
       const country = r.country ? (r.country === 'ALL' ? 'ALL' : canonicalCountry(r.country)) : null;
       return {
         id: r.id, title: r.title, meta: r.meta ?? '', kind: r.kind, tags: r.tags ?? [], text: r.body ?? '',
-        author: pr?.username, authorAvatar: safeUrl(pr?.avatar_url),
+        authorId: r.author_id ?? undefined, author: pr?.username, authorAvatar: safeUrl(pr?.avatar_url),
         startDate: dayOrNull(r.start_date), endDate: dayOrNull(r.end_date), country,
       } as Item;
     });
@@ -157,46 +140,44 @@ export async function loadQuestions(opts: { q?: string; tag?: string; country?: 
   const { q = '', tag, country, limit = 50, sort = 'new' } = opts;
   try {
     const sb = supabaseServer();
-    const { data, error } = await withAvatar((a) => {
-      let query = sb.from('questions').select(sq(`*, profiles${country ? '!inner' : ''}(${pcols(a, 'username, country')}), answers!answers_question_id_fkey(count)`));
-      if (q.trim()) query = query.ilike('title', `%${q.trim()}%`);
-      if (tag) query = query.contains('tags', [tag]);
-      if (country) query = query.eq('profiles.country', country);
-      return withTimeout(query.order('created_at', { ascending: false }).limit(sort === 'new' ? limit : 100));
-    });
+    let query = sb.from('questions').select(sq(`*, profiles${country ? '!inner' : ''}(username, country, avatar_url), answers!answers_question_id_fkey(count)`));
+    if (q.trim()) query = query.ilike('title', `%${q.trim().slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
+    if (tag) query = query.contains('tags', [tag]);
+    if (country) query = query.eq('profiles.country', country);
+    const { data, error } = await withTimeout(query.order('created_at', { ascending: false }).limit(sort === 'new' ? limit : 100));
     if (error) return fail([]);
     return ok(applySort((data as unknown as QuestionRow[]) ?? [], sort, limit));
   } catch { return fail([]); }
 }
 
-export async function loadQuestion(id: string): Promise<Loaded<{ question: QuestionRow; answers: AnswerRow[] } | null>> {
+export async function loadQuestion(id: string): Promise<Loaded<{ question: QuestionRow; answers: AnswerRow[]; comments: CommentRow[] } | null>> {
   try {
     const sb = supabaseServer();
-    const { data: q, error } = await withAvatar((a) => withTimeout(sb.from('questions').select(sq(`*, profiles(${pcols(a, 'username, country')})`)).eq('id', id).maybeSingle()));
+    const { data: q, error } = await withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url)').eq('id', id).maybeSingle());
     if (error) return fail(null);
     if (!q) return ok(null);
-    const { data: answers } = await withAvatar((a) => withTimeout(sb.from('answers').select(sq(`*, profiles(${pcols(a, 'username')})`)).eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true })));
-    return ok({ question: q as unknown as QuestionRow, answers: (answers as unknown as AnswerRow[]) ?? [] });
+    const { data: answers } = await withTimeout(sb.from('answers').select('*, profiles(username, avatar_url)').eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true }));
+    const { data: comments } = await withTimeout(sb.from('comments').select('*, profiles(username, avatar_url)').eq('question_id', id).order('created_at', { ascending: true }).limit(300));
+    return ok({ question: q as unknown as QuestionRow, answers: (answers as unknown as AnswerRow[]) ?? [], comments: (comments as unknown as CommentRow[]) ?? [] });
   } catch { return fail(null); }
 }
 
 /* -------------------------------------------------------------- Projets */
 
 type ProjectDbRow = {
-  id: string; title: string; description?: string | null; url?: string | null; cover_url?: string | null; tags?: string[] | null;
+  id: string; author_id?: string | null; title: string; description?: string | null; url?: string | null; cover_url?: string | null; tags?: string[] | null;
   profiles?: { username: string; country: string | null; avatar_url?: string | null } | null; project_ratings?: { stars: number }[];
 };
 
 export async function loadProjects(): Promise<Loaded<ProjectItem[]>> {
   try {
     const sb = supabaseServer();
-    let r = await withAvatar((a) => withTimeout(sb.from('projects').select(sq(`*, profiles(${pcols(a, 'username, country')}), project_ratings(stars)`)).order('created_at', { ascending: false }).limit(60)));
-    if (r.error) r = await withAvatar((a) => withTimeout(sb.from('projects').select(sq(`*, profiles(${pcols(a, 'username, country')})`)).order('created_at', { ascending: false }).limit(60)));
+    const r = await withTimeout(sb.from('projects').select('*, profiles(username, country, avatar_url), project_ratings(stars)').order('created_at', { ascending: false }).limit(60));
     if (r.error) return fail([]);
     return ok(((r.data ?? []) as unknown as ProjectDbRow[]).map((p) => {
       const st = (p.project_ratings ?? []).map((x) => x.stars);
       return {
-        id: p.id, title: p.title, description: p.description ?? null, tags: p.tags ?? [], url: safeUrl(p.url), cover: safeUrl(p.cover_url),
+        id: p.id, authorId: p.author_id ?? null, title: p.title, description: p.description ?? null, tags: p.tags ?? [], url: safeUrl(p.url), cover: safeUrl(p.cover_url),
         username: p.profiles?.username ?? null, avatar: safeUrl(p.profiles?.avatar_url), country: p.profiles?.country ?? null,
         avg: st.length ? st.reduce((a, b) => a + b, 0) / st.length : 0, count: st.length,
       };
@@ -211,36 +192,37 @@ export type ProfileView = {
   questions: QuestionRow[];
   projects: { id: string; title: string; url: string | null; tags: string[] }[];
   rep: number;
-  /** Parcours public (vide si le propriétaire l'a masqué). */
+  /** Parcours public (vide si le propriétaire l'a masqué ou s'il n'a rien renseigné). */
   cv: ReturnType<typeof normalizeCv>;
 };
+
+/** Colonnes de la vue `profiles_public` (la table `profiles` n'expose plus `bio` ni `cv` aux visiteurs). */
+const PUBLIC_PROFILE_COLS = 'id, username, full_name, country, headline, stack, languages, years_exp, open_to, github_url, website_url, avatar_url, created_at, bio_public, bio, cv_public, cv';
 
 export async function loadProfile(username: string): Promise<Loaded<ProfileView | null>> {
   try {
     const sb = supabaseServer();
-    const { data: p, error } = await withTimeout(sb.from('profiles').select('*').eq('username', username).maybeSingle());
+    const { data: p, error } = await withTimeout(sb.from('profiles_public').select(PUBLIC_PROFILE_COLS).eq('username', username).maybeSingle());
     if (error) return fail(null);
     if (!p) return ok(null);
     const [{ data: qs }, { data: pjs }, { data: ans }] = await Promise.all([
-      withAvatar((a) => withTimeout(sb.from('questions').select(sq(`*, profiles(${pcols(a, 'username, country')}), answers!answers_question_id_fkey(count)`)).eq('author_id', p.id).order('created_at', { ascending: false }).limit(10))),
+      withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url), answers!answers_question_id_fkey(count)').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
       withTimeout(sb.from('projects').select('id, title, url, tags').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
       withTimeout(sb.from('answers').select('score').eq('author_id', p.id)),
     ]);
     const rep = (ans ?? []).reduce((n: number, a: { score?: number }) => n + (a.score ?? 0), 0) + (ans?.length ?? 0) * 5;
 
-    /* Confidentialité : la bio n'est publique que si bio_public = true ; le parcours l'est par défaut (cv_public ≠ false).
-       Le contenu masqué est retiré ici, côté serveur, et n'est donc jamais sérialisé vers le navigateur d'un visiteur. */
-    const row = p as ProfileRow;
-    const bioPublic = row.bio_public === true;
-    const cvPublic = row.cv_public !== false;
+    /* Confidentialité : `profiles_public` ne renvoie la bio et le parcours que si leur propriétaire les a rendus publics
+       (sinon NULL) ; le contenu masqué n'atteint donc jamais le serveur Next.js, encore moins le navigateur d'un visiteur. */
+    const row = p as unknown as ProfileRow;
     const cv = normalizeCv(row.cv);
-    const profile: ProfileRow = { ...row, bio: bioPublic ? row.bio : null, cv: undefined, avatar_url: safeUrl(row.avatar_url) };
+    const profile: ProfileRow = { ...row, cv: undefined, avatar_url: safeUrl(row.avatar_url), github_url: safeUrl(row.github_url), website_url: safeUrl(row.website_url) };
     return ok({
       profile,
       questions: (qs as unknown as QuestionRow[]) ?? [],
       projects: (pjs ?? []).map((j: { id: string; title: string; url: string | null; tags: string[] | null }) => ({ id: j.id, title: j.title, url: j.url, tags: j.tags ?? [] })),
       rep,
-      cv: cvPublic ? cv : [],
+      cv,
     });
   } catch { return fail(null); }
 }
@@ -279,8 +261,7 @@ export async function loadStats(): Promise<Loaded<Stats>> {
 
 export async function loadContributors(limit = 5): Promise<Loaded<Contributor[]>> {
   try {
-    // `*` : la vue `contributors` gagne la colonne avatar_url avec schema-v6, sans casser avant.
-    const { data, error } = await withTimeout(supabaseServer().from('contributors').select('*').order('rep', { ascending: false }).limit(limit));
+    const { data, error } = await withTimeout(supabaseServer().from('contributors').select('username, country, rep, avatar_url').order('rep', { ascending: false }).limit(limit));
     if (error) return fail([]);
     return ok(((data ?? []) as Contributor[]).map((c) => ({ ...c, avatar_url: safeUrl(c.avatar_url) })));
   } catch { return fail([]); }

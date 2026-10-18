@@ -8,7 +8,9 @@ import FormSkeleton from '@/components/FormSkeleton';
 import { useT } from '@/components/I18n';
 import { IAlert, IBold, IBraces, ICode, ILink, ITip } from '@/components/Icons';
 import Markdown from '@/components/Markdown';
+import ImageInsert from '@/components/ImageInsert';
 import { friendlyError } from '@/lib/errors';
+import { POST_BUCKET } from '@/lib/image';
 import { supabaseBrowser } from '@/lib/supabase';
 import { parseTags, POPULAR_TAGS } from '@/lib/utils';
 
@@ -24,15 +26,31 @@ export default function AskPage() {
   const [error, setError] = useState<string | null>(null);
   const [touched, setTouched] = useState(false);
   const [pane, setPane] = useState<'write' | 'preview'>('write');
+  const [editId, setEditId] = useState<string | null>(null);
   const area = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    supabaseBrowser()
-      .auth.getSession()
-      .then(({ data }) => {
-        setUserId(data.session?.user.id ?? null);
-        setReady(true);
-      });
+    let alive = true;
+    (async () => {
+      const sb = supabaseBrowser();
+      let uid: string | null = null;
+      try { uid = (await sb.auth.getSession()).data.session?.user.id ?? null; } catch { /* hors ligne */ }
+      if (!alive) return;
+      setUserId(uid);
+      const params = new URLSearchParams(window.location.search);
+      const edit = params.get('edit');
+      const tag = params.get('tag');
+      if (edit && uid) {
+        const { data } = await sb.from('questions').select('id, author_id, title, body, tags').eq('id', edit).maybeSingle();
+        if (!alive) return;
+        if (data && data.author_id === uid) {
+          setEditId(data.id); setTitle(data.title); setBody(data.body); setTags(data.tags ?? []);
+        } else setError(t('err.generic'));
+      } else if (tag) setTags([tag.toLowerCase().slice(0, 30)]);
+      setReady(true);
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -42,11 +60,17 @@ export default function AskPage() {
     if (title.trim().length < 10) return setError(t('err.title10'));
     if (body.trim().length < 20) return setError(t('err.body20'));
     setBusy(true);
-    const { data, error: err } = await supabaseBrowser()
-      .from('questions')
-      .insert({ author_id: userId, title: title.trim(), body: body.trim(), tags: parseTags(tags.join(',')) })
-      .select('id')
-      .single();
+    const fields = { title: title.trim(), body: body.trim(), tags: parseTags(tags.join(',')) };
+    const sb = supabaseBrowser();
+    if (editId) {
+      const { error: err } = await sb.from('questions').update(fields).eq('id', editId);
+      setBusy(false);
+      if (err) return setError(friendlyError(err.message, t));
+      router.push(`/questions/${editId}`);
+      router.refresh();
+      return;
+    }
+    const { data, error: err } = await sb.from('questions').insert({ author_id: userId, ...fields }).select('id').single();
     setBusy(false);
     if (err) return setError(friendlyError(err.message, t));
     router.push(`/questions/${data.id}`);
@@ -82,7 +106,7 @@ export default function AskPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
-      <h1 className="mb-6 text-2xl font-bold">{t('ask.h')}</h1>
+      <h1 className="mb-6 text-2xl font-bold">{editId ? t('ask.edit') : t('ask.h')}</h1>
       <form onSubmit={submit} className="space-y-5" noValidate>
         <Field id="ask-title" label={t('ask.title')} hint={t('ask.title.hint')} error={titleErr} counter={{ n: title.trim().length, min: 10, max: 150 }}>
           <input id="ask-title" className="input" maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('ask.ph')}
@@ -103,6 +127,8 @@ export default function AskPage() {
                   <button type="button" className={tb} title={t('ask.tb.code')} aria-label={t('ask.tb.code')} onClick={() => wrap('`', '`', t('ask.tb.codeph'))}><ICode className="h-4 w-4" /></button>
                   <button type="button" className={tb} title={t('ask.tb.block')} aria-label={t('ask.tb.block')} onClick={() => wrap('\n```\n', '\n```\n', t('ask.tb.codeph'))}><IBraces /></button>
                   <button type="button" className={tb} title={t('ask.tb.link')} aria-label={t('ask.tb.link')} onClick={() => wrap('[', '](https://)', t('ask.tb.linkph'))}><ILink /></button>
+                  <ImageInsert userId={userId} bucket={POST_BUCKET} maxSide={1600} onProblem={setError} className={tb}
+                    onUrl={(u) => setBody((v) => `${v}${v && !v.endsWith('\n') ? '\n' : ''}![${t('img.alt')}](${u})\n`)} />
                 </div>
                 <textarea id="ask-body" ref={area} value={body} onChange={(e) => setBody(e.target.value)} placeholder={t('ask.detph')}
                   aria-invalid={!!bodyErr} aria-describedby={describedBy('ask-body', { counter: true, error: !!bodyErr })}

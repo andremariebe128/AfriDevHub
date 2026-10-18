@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Avatar from '@/components/Avatar';
 import Flag from '@/components/Flag';
 import { useT } from '@/components/I18n';
@@ -10,9 +10,11 @@ import { IExternal } from '@/components/Icons';
 import { sortCountries } from '@/lib/countries';
 import { countryName } from '@/lib/utils';
 import { IStar } from '@/components/Icons';
+import { ProjectForm } from '@/components/AddProjectForm';
+import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 
-export type Proj = { id: string; title: string; description?: string | null; tags: string[]; url: string | null; cover: string | null; username: string | null; avatar?: string | null; country: string | null; avg: number; count: number };
+export type Proj = { id: string; authorId?: string | null; title: string; description?: string | null; tags: string[]; url: string | null; cover: string | null; username: string | null; avatar?: string | null; country: string | null; avg: number; count: number };
 
 function Stars({ id, avg, count, label, reviews }: { id: string; avg: number; count: number; label: string; reviews: string }) {
   const router = useRouter();
@@ -39,6 +41,19 @@ function Stars({ id, avg, count, label, reviews }: { id: string; avg: number; co
 export default function ProjectsHub({ items }: { items: Proj[] }) {
   const { t, locale } = useT();
   const [q, setQ] = useState(''); const [stack, setStack] = useState(''); const [country, setCountry] = useState('');
+  const [uid, setUid] = useState<string | null>(null);
+  const router = useRouter();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { supabaseBrowser().auth.getSession().then(({ data }) => setUid(data.session?.user.id ?? null)).catch(() => {}); }, []);
+  async function remove(id: string) {
+    setErr(null);
+    const { error } = await supabaseBrowser().from('projects').delete().eq('id', id);
+    if (error) return setErr(friendlyError(error.message, t));
+    setDeleting(null);
+    router.refresh();
+  }
   const stacks = useMemo(() => Array.from(new Set(items.flatMap((i) => i.tags))).sort(), [items]);
   const countries = useMemo(() => sortCountries(Array.from(new Set(items.map((i) => i.country).filter(Boolean) as string[])), locale), [items, locale]);
   const shown = items.filter((i) => (!stack || i.tags.includes(stack)) && (!country || i.country === country) && i.title.toLowerCase().includes(q.toLowerCase()));
@@ -62,6 +77,11 @@ export default function ProjectsHub({ items }: { items: Proj[] }) {
       <ul className="overflow-hidden rounded-lg border border-line bg-surface">
         {shown.map((p) => (
           <li key={p.id} className="border-b border-line px-4 py-3.5 last:border-b-0">
+            {editing === p.id && uid ? (
+              <ProjectForm userId={uid} initial={{ id: p.id, title: p.title, description: p.description ?? null, url: p.url, tags: p.tags, cover: p.cover }}
+                onDone={() => { setEditing(null); router.refresh(); }} onCancel={() => setEditing(null)} />
+            ) : (<>
+            {p.cover && <img src={p.cover} alt="" loading="lazy" className="mb-3 aspect-[16/7] w-full rounded-md border border-line object-cover" />}
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               {p.url
                 ? <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-base font-semibold text-fg hover:text-accent-fg">{p.title}<IExternal className="h-3.5 w-3.5 text-subtle" /></a>
@@ -79,6 +99,24 @@ export default function ProjectsHub({ items }: { items: Proj[] }) {
                 </Link>
               )}
             </div>
+            {uid && p.authorId === uid && (
+              <div className="mt-2 flex flex-wrap items-center gap-1">
+                <button type="button" className="min-h-9 rounded px-2 text-sm font-medium text-muted hover:text-fg hover:underline" onClick={() => setEditing(p.id)}>{t('ui.edit')}</button>
+                <button type="button" className="min-h-9 rounded px-2 text-sm font-medium text-muted hover:text-fg hover:underline" onClick={() => setDeleting(deleting === p.id ? null : p.id)}>{t('ui.delete')}</button>
+              </div>
+            )}
+            {deleting === p.id && (
+              <div className="mt-2 space-y-2 rounded-lg border border-red-600/30 bg-red-600/[0.05] p-3">
+                <p className="text-sm font-semibold">{t('del.pj.h')}</p>
+                <p className="text-xs text-muted">{t('del.pj.p')}</p>
+                {err && <p role="alert" className="text-xs text-red-700 dark:text-red-400">{err}</p>}
+                <div className="flex gap-2">
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => void remove(p.id)}>{t('ui.delete')}</button>
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => setDeleting(null)}>{t('ui.cancel')}</button>
+                </div>
+              </div>
+            )}
+            </>)}
           </li>
         ))}
       </ul>

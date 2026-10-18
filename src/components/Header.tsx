@@ -37,11 +37,11 @@ export default function Header() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  // Photo de profil de l'utilisateur connecté (colonne avatar_url : absente tant que la migration n'est pas passée).
+  // Photo de profil de l'utilisateur connecté.
   useEffect(() => {
     if (!uid) { setAvatar(null); return; }
     let alive = true;
-    supabaseBrowser().from('profiles').select('*').eq('id', uid).maybeSingle()
+    supabaseBrowser().from('profiles_me').select('avatar_url').maybeSingle()
       .then(({ data }) => { if (alive) setAvatar(safeUrl(data?.avatar_url)); }, () => {});
     const onChange = (e: Event) => setAvatar(safeUrl((e as CustomEvent<string | null>).detail));
     window.addEventListener('adh-avatar', onChange);

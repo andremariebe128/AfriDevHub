@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Avatar from '@/components/Avatar';
+import ListingOwnerActions from '@/components/ListingOwnerActions';
 import Flag from '@/components/Flag';
 import { ICalendar, IGlobe } from '@/components/Icons';
 import { ALL_COUNTRIES, findCountry } from '@/lib/countries';
@@ -70,6 +71,7 @@ export default function ListingRow({ i, locale, today = null }: { i: Item; local
           </Link>
         )}
       </div>
+      {i.id && i.authorId && <ListingOwnerActions id={i.id} authorId={i.authorId} />}
     </li>
   );
 }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Avatar from '@/components/Avatar';
 import { useT } from '@/components/I18n';
 import { IAlert, ICamera, IOk, ITrash } from '@/components/Icons';
-import { isMissingColumn, storageError } from '@/lib/errors';
+import { storageError } from '@/lib/errors';
 import { AVATAR_BUCKET, AVATAR_TYPES, checkAvatarFile, squareAvatar } from '@/lib/image';
 import { supabaseBrowser } from '@/lib/supabase';
 
@@ -52,7 +52,7 @@ export default function AvatarUpload({ userId, name, url, onChange }: { userId: 
     const publicUrl = `${sb.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
     const { error } = await sb.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
     setBusy(false);
-    if (error) return setMsg({ ok: false, text: isMissingColumn(error) ? t('err.partial') : storageError(error, t) });
+    if (error) return setMsg({ ok: false, text: storageError(error, t) });
     setPending(null);
     onChange(publicUrl);
     window.dispatchEvent(new CustomEvent('adh-avatar', { detail: publicUrl }));
@@ -66,7 +66,7 @@ export default function AvatarUpload({ userId, name, url, onChange }: { userId: 
     await sb.storage.from(AVATAR_BUCKET).remove([`${userId}/avatar.webp`, `${userId}/avatar.jpg`]);
     const { error } = await sb.from('profiles').update({ avatar_url: null }).eq('id', userId);
     setBusy(false);
-    if (error) return setMsg({ ok: false, text: isMissingColumn(error) ? t('err.partial') : storageError(error, t) });
+    if (error) return setMsg({ ok: false, text: storageError(error, t) });
     onChange(null);
     window.dispatchEvent(new CustomEvent('adh-avatar', { detail: null }));
     setMsg({ ok: true, text: t('av.removed') });
