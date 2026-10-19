@@ -56,7 +56,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-canvas/85 backdrop-blur-md supports-[backdrop-filter]:bg-canvas/75">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-6">
-        <Link href="/" aria-label={t('a.home')} className="mr-1 shrink-0 rounded-lg lg:mr-4"><Logo height={32} /></Link>
+        <Link href="/" aria-label={t('a.home')} className="header-logo mr-1 min-w-0 shrink-0 rounded-lg lg:mr-4"><Logo height={32} /></Link>
 
         <nav className="hidden items-center gap-0.5 lg:flex" aria-label={t('a.main')}>
           {NAV.map(({ href, label }) => {
@@ -73,9 +73,9 @@ export default function Header() {
 
         <HeaderSearch className="ml-auto hidden min-w-0 max-w-xs flex-1 xl:ml-4 xl:block" />
 
-        <div className="ml-auto flex items-center gap-0.5 sm:gap-1 xl:ml-0">
+        <div className="ml-auto flex min-w-0 shrink-0 items-center gap-0.5 sm:gap-1 xl:ml-0">
           <Link href="/questions" aria-label={t('h.search')} className={`${icon} hidden min-[390px]:flex xl:hidden`}><ISearch className="h-[18px] w-[18px]" /></Link>
-          <LangSwitch className="mx-0.5" />
+          <LangSwitch className="mx-0.5 scale-95 sm:scale-100" />
           <ThemeToggle />
           <Link href="/notifications" aria-label={unread ? `${t('notif.h')} (${unread} ${t('notif.unread')})` : t('notif.h')} className={`${icon} relative`}><IBell className="h-[18px] w-[18px]" /><Badge n={unread} /></Link>
                     {session ? (
@@ -83,7 +83,7 @@ export default function Header() {
               {avatar ? <Avatar name={(session.user.user_metadata?.username as string | undefined) ?? session.user.email} src={avatar} size={40} className="!ring-0" /> : initial}<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-canvas bg-leaf-500" />
             </Link>
           ) : (
-            <Link href="/login" className="btn btn-primary btn-sm ml-1">{t('h.join')}</Link>
+            <Link href="/login" className="btn btn-primary btn-sm ml-1 !px-3">{t('h.join')}</Link>
           )}
         </div>
       </div>

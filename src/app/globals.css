@@ -121,9 +121,13 @@
     scroll-behavior: smooth;
     scroll-padding-top: 5.5rem;
     -webkit-text-size-adjust: 100%;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   body {
+    max-width: 100vw;
+    overflow-x: clip;
     @apply bg-canvas font-sans text-base leading-relaxed text-fg antialiased selection:bg-brand-600 selection:text-white;
     font-feature-settings: "ss01", "cv11";
   }
@@ -510,3 +514,6 @@ html[data-lite] .anim-kente-bar { background-size: 100% 100%; animation: none; }
   .anim-particle { animation: none !important; }
   .anim-kente-bar { background-size: 100% 100%; animation: none; }
 }
+
+/* Petits écrans : l'en-tête garde la marque seule pour tout faire tenir sans défilement horizontal. */
+@media (max-width: 479px) { .header-logo .logo-word { display: none; } }
