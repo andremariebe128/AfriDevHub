@@ -77,6 +77,8 @@ export type Item = {
   en?: { text: string }; flag?: string; members?: number; weekly?: number; href?: string;
   /** Opportunités : dates AAAA-MM-JJ et pays (nom français, ou `ALL` = ouvert à tous). */
   startDate?: string | null; endDate?: string | null; country?: string | null;
+  /** Lien d'inscription ou du site (http/https), validé côté serveur. */
+  link?: string | null;
   /** Texte additionnel pour la recherche (ex. nom anglais d'un pays). */
   alt?: string;
 };

@@ -11,6 +11,7 @@ import { IBell, ISearch } from '@/components/Icons';
 import LangSwitch from '@/components/LangSwitch';
 import Logo from '@/components/Logo';
 import ThemeToggle from '@/components/ThemeToggle';
+import { Badge, useUnread } from '@/components/useUnread';
 import { supabaseBrowser } from '@/lib/supabase';
 import { safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
@@ -29,6 +30,7 @@ export default function Header() {
   const [session, setSession] = useState<Session | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
   const uid = session?.user.id;
+  const unread = useUnread(uid);
 
   useEffect(() => {
     const sb = supabaseBrowser();
@@ -75,7 +77,7 @@ export default function Header() {
           <Link href="/questions" aria-label={t('h.search')} className={`${icon} hidden min-[390px]:flex xl:hidden`}><ISearch className="h-[18px] w-[18px]" /></Link>
           <LangSwitch className="mx-0.5" />
           <ThemeToggle />
-          <Link href="/notifications" aria-label={t('notif.h')} className={`${icon} hidden sm:flex`}><IBell className="h-[18px] w-[18px]" /></Link>
+          <Link href="/notifications" aria-label={unread ? `${t('notif.h')} (${unread} ${t('notif.unread')})` : t('notif.h')} className={`${icon} relative`}><IBell className="h-[18px] w-[18px]" /><Badge n={unread} /></Link>
                     {session ? (
             <Link href="/profile" aria-label={t('h.profile')} className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full bg-brand-600 font-display text-sm font-bold text-white ring-2 ring-canvas">
               {avatar ? <Avatar name={(session.user.user_metadata?.username as string | undefined) ?? session.user.email} src={avatar} size={40} className="!ring-0" /> : initial}<span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-canvas bg-leaf-500" />

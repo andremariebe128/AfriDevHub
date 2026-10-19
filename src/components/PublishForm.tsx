@@ -11,10 +11,10 @@ import { norm } from '@/lib/countries';
 import { todayISO } from '@/lib/dates';
 import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
-import { CHALLENGE_KIND, oppKind } from '@/lib/utils';
+import { CHALLENGE_KIND, oppKind, safeUrl } from '@/lib/utils';
 
 const KINDS = { opportunity: ['Stage', 'Hackathon', 'Événement', 'Freelance', CHALLENGE_KIND], mentor: ['Mentor', 'Collab'] };
-const EMPTY = { kind: '', title: '', meta: '', body: '', start: '', end: '' };
+const EMPTY = { kind: '', title: '', meta: '', body: '', start: '', end: '', link: '' };
 /** Catégories pour lesquelles les dates sont recommandées (hackathon, événement, défi / concours). */
 const wantsDates = (kind: string) => /hackathon|evenement|event|defi|concours|challenge|contest/.test(norm(kind));
 
@@ -38,9 +38,9 @@ export default function PublishForm() {
     e.preventDefault();
     if (!uid) return;
     setTouched(true);
-    if (f.kind.trim().length < 2 || f.title.trim().length < 3 || (isOpp && datesBad)) return;
+    if (f.kind.trim().length < 2 || f.title.trim().length < 3 || (isOpp && datesBad) || linkBad) return;
     setBusy(true); setMsg(null); setErrText(null);
-    const base = { section, kind: f.kind.trim(), title: f.title.trim(), meta: f.meta.trim(), body: f.body.trim(), tags: tags.slice(0, 6), author_id: uid };
+    const base = { section, kind: f.kind.trim(), title: f.title.trim(), meta: f.meta.trim(), body: f.body.trim(), tags: tags.slice(0, 6), author_id: uid, link: f.link.trim() || null };
     const extra = isOpp ? { start_date: f.start || null, end_date: f.end || null, country: country || null } : {};
     const sb = supabaseBrowser();
     const { error } = await sb.from('listings').insert({ ...base, ...extra });
@@ -73,11 +73,13 @@ export default function PublishForm() {
   const titleErr = touched && f.title.trim().length < 3 ? t('err.title3') : null;
   const isOpp = section === 'opportunity';
   const datesBad = Boolean(f.start && f.end && f.end < f.start);
+  const linkBad = Boolean(f.link.trim() && !safeUrl(f.link.trim()));
+  const linkErr = touched && linkBad ? t('err.url') : null;
   const endErr = datesBad ? t('pub.err.dates') : null;
   const recommend = isOpp && wantsDates(f.kind) && !f.start && !f.end;
   const preview = {
     title: f.title.trim() || t('pub.untitled'), meta: f.meta.trim(), kind: f.kind.trim(), tags, text: f.body.trim(), author: undefined,
-    startDate: isOpp && !datesBad ? f.start || null : null, endDate: isOpp && !datesBad ? f.end || null : null, country: isOpp ? country || null : null,
+    startDate: isOpp && !datesBad ? f.start || null : null, endDate: isOpp && !datesBad ? f.end || null : null, country: isOpp ? country || null : null, link: f.link.trim() && !linkBad ? safeUrl(f.link.trim()) : null,
   };
 
   return (
@@ -129,6 +131,9 @@ export default function PublishForm() {
               <CountrySelect id="pb-country" value={country} onChange={setCountry} allowAll describedBy="pb-country-hint" />
             </Field>
           )}
+          <Field id="pb-link" label={t('pub.link')} optional={t('p.opt')} error={linkErr}>
+            <input id="pb-link" type="url" inputMode="url" className="input font-mono" maxLength={300} placeholder="https://" value={f.link} onChange={set('link')} aria-invalid={!!linkErr} aria-describedby={describedBy('pb-link', { error: !!linkErr })} autoComplete="off" />
+          </Field>
           <Field id="pb-meta" label={t('pub.meta')} optional={t('p.opt')}>
             <input id="pb-meta" className="input" placeholder={t('pub.meta.ph')} value={f.meta} onChange={set('meta')} />
           </Field>

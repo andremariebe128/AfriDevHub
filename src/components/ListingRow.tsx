@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Avatar from '@/components/Avatar';
 import ListingOwnerActions from '@/components/ListingOwnerActions';
 import Flag from '@/components/Flag';
-import { ICalendar, IGlobe } from '@/components/Icons';
+import { ICalendar, IExternal, IGlobe } from '@/components/Icons';
 import { ALL_COUNTRIES, findCountry } from '@/lib/countries';
 import { daysLeft, formatRange, phaseOf, type Phase } from '@/lib/dates';
 import { DICT, type Locale } from '@/lib/i18n';
@@ -63,6 +63,11 @@ export default function ListingRow({ i, locale, today = null }: { i: Item; local
         </p>
       )}
       {i.text && <p className="mt-1.5 text-sm text-muted">{locale === 'en' && i.en ? i.en.text : i.text}</p>}
+      {i.link && (
+        <a href={i.link} target="_blank" rel="noopener noreferrer nofollow" className="mt-2 inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-accent-fg hover:underline">
+          {T['op.open']}<IExternal className="h-3.5 w-3.5" />
+        </a>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
         <div className="flex flex-wrap gap-1.5">{i.tags.map((tg) => <span key={tg} className="chip">{tg}</span>)}</div>
         {i.author && (

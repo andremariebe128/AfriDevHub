@@ -6,11 +6,11 @@ export const generateMetadata = async (): Promise<Metadata> => ({ title: (await 
 
 const PLATFORMS = [
   { id: 'pwa', name: 'Application Web (PWA)', kind: 'S’installe depuis le navigateur', url: null, logo: null, accent: 'brand' },
-  { id: 'android', name: 'Android', kind: 'APK · 138 MB', url: '/builds/android.apk', logo: '/icons/os-android.svg', accent: '#3DDC84' },
-  { id: 'ios', name: 'iPhone / iPad', kind: 'TestFlight · App Store', url: null, logo: '/icons/os-apple.svg', accent: '#888' },
+  { id: 'android', name: 'Android', kind: 'APK', url: '/builds/android.apk', logo: '/icons/os-android.svg', accent: '#3DDC84' },
+  { id: 'ios', name: 'iPhone / iPad', kind: 'App Store', url: null, logo: '/icons/os-apple.svg', accent: '#888' },
   { id: 'windows', name: 'Windows', kind: 'Installateur .exe', url: '/builds/AfriDevHub-Setup-1.0.0.exe', logo: '/icons/os-windows.svg', accent: '#00adef' },
   { id: 'macos', name: 'macOS', kind: 'Image disque .dmg', url: null, logo: '/icons/os-apple.svg', accent: '#888' },
-  { id: 'linux', name: 'Linux', kind: 'Paquet .deb · 9 MB', url: '/builds/linux.deb', logo: '/icons/os-linux.svg', accent: '#FCC624' },
+  { id: 'linux', name: 'Linux', kind: 'Paquet .deb', url: null, logo: '/icons/os-linux.svg', accent: '#FCC624' },
 ] as const;
 
 export default async function DownloadPage() {

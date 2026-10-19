@@ -6,7 +6,7 @@ import NotificationRow from '@/components/NotificationRow';
 import { supabaseBrowser } from '@/lib/supabase';
 import { timeAgo } from '@/lib/utils';
 
-type Row = { id: string; type: 'answer' | 'accepted' | 'vote'; question_id: string | null; created_at: string; read_at: string | null;
+type Row = { id: string; type: 'answer' | 'accepted' | 'vote' | 'comment'; question_id: string | null; created_at: string; read_at: string | null;
   actor: { username: string } | null; question: { title: string } | null };
 
 /** Notifications de l'utilisateur connecté (alimentées par des triggers SQL). */
@@ -31,10 +31,22 @@ export default function NotificationsList() {
       if (error) return setRows([]);
       const list = (data ?? []) as unknown as Row[];
       setRows(list);
-      if (list.some((r) => !r.read_at)) await sb.from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null);
     })();
     return () => { cancelled = true; };
   }, []);
+
+  const markAll = async () => {
+    const now = new Date().toISOString();
+    setRows((rs) => (rs ?? []).map((r) => (r.read_at ? r : { ...r, read_at: now })));
+    await supabaseBrowser().from('notifications').update({ read_at: now }).is('read_at', null);
+    window.dispatchEvent(new Event('adh-notif'));
+  };
+  const markOne = async (id: string) => {
+    setRows((rs) => (rs ?? []).map((r) => (r.id === id && !r.read_at ? { ...r, read_at: new Date().toISOString() } : r)));
+    await supabaseBrowser().from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id).is('read_at', null);
+    window.dispatchEvent(new Event('adh-notif'));
+  };
+  const unreadCount = (rows ?? []).filter((r) => !r.read_at).length;
 
   if (rows === null) return <p className="mt-5 text-sm text-muted" aria-busy="true">…</p>;
   if (rows.length === 0) return (
@@ -43,14 +55,20 @@ export default function NotificationsList() {
       <p className="mt-1 text-sm text-muted">{t('notif.empty.p')}</p>
     </section>
   );
-  const icon = { answer: <IChat className="h-4 w-4" />, accepted: <IAward className="h-4 w-4" />, vote: <IThumb className="h-4 w-4" /> };
-  const label = { answer: t('nt.answer'), accepted: t('nt.accepted'), vote: t('nt.vote') };
+  const icon = { answer: <IChat className="h-4 w-4" />, accepted: <IAward className="h-4 w-4" />, vote: <IThumb className="h-4 w-4" />, comment: <IChat className="h-4 w-4" /> };
+  const label = { answer: t('nt.answer'), accepted: t('nt.accepted'), vote: t('nt.vote'), comment: t('nt.comment') };
   return (
-    <ul aria-label={t('notif.list')} className="mt-5 overflow-hidden rounded-lg border border-line bg-surface">
+    <>
+    <div className="mt-5 flex items-center justify-between gap-3">
+      <p className="text-sm text-muted" aria-live="polite">{unreadCount > 0 ? `${unreadCount} ${t('notif.unread')}` : t('notif.allread')}</p>
+      <button type="button" onClick={markAll} disabled={unreadCount === 0} className="btn btn-secondary btn-sm disabled:opacity-50">{t('notif.markall')}</button>
+    </div>
+    <ul aria-label={t('notif.list')} className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
       {rows.map((r) => (
-        <NotificationRow key={r.id} icon={icon[r.type]} n={{ id: r.id, title: `@${r.actor?.username ?? '—'} ${label[r.type]}`, text: r.question?.title,
+        <NotificationRow key={r.id} onOpen={() => markOne(r.id)} icon={icon[r.type] ?? icon.answer} n={{ id: r.id, title: `@${r.actor?.username ?? '—'} ${(label[r.type] ?? '')}`, text: r.question?.title,
           href: r.question_id ? `/questions/${r.question_id}` : '/questions', ago: timeAgo(r.created_at, locale), unread: !r.read_at }} />
       ))}
     </ul>
+    </>
   );
 }

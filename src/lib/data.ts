@@ -25,7 +25,7 @@ const sq = (s: string): string => s;
 
 type ListingRowDb = {
   id?: string; author_id?: string | null; title: string; meta: string | null; kind: string; tags: string[] | null; body: string | null;
-  start_date?: string | null; end_date?: string | null; country?: string | null;
+  start_date?: string | null; end_date?: string | null; country?: string | null; link?: string | null;
   profiles?: { username: string; avatar_url?: string | null } | { username: string; avatar_url?: string | null }[] | null;
 };
 
@@ -40,7 +40,7 @@ export async function loadItems(section: 'opportunity' | 'mentor'): Promise<Item
       return {
         id: r.id, title: r.title, meta: r.meta ?? '', kind: r.kind, tags: r.tags ?? [], text: r.body ?? '',
         authorId: r.author_id ?? undefined, author: pr?.username, authorAvatar: safeUrl(pr?.avatar_url),
-        startDate: dayOrNull(r.start_date), endDate: dayOrNull(r.end_date), country,
+        startDate: dayOrNull(r.start_date), endDate: dayOrNull(r.end_date), country, link: safeUrl(r.link),
       } as Item;
     });
   } catch { return []; }
@@ -156,7 +156,7 @@ export async function loadQuestion(id: string): Promise<Loaded<{ question: Quest
     const { data: q, error } = await withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url)').eq('id', id).maybeSingle());
     if (error) return fail(null);
     if (!q) return ok(null);
-    const { data: answers } = await withTimeout(sb.from('answers').select('*, profiles(username, avatar_url)').eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true }));
+    const { data: answers } = await withTimeout(sb.from('answers').select('*, profiles!author_id(username, avatar_url)').eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true }));
     const { data: comments } = await withTimeout(sb.from('comments').select('*, profiles(username, avatar_url)').eq('question_id', id).order('created_at', { ascending: true }).limit(300));
     return ok({ question: q as unknown as QuestionRow, answers: (answers as unknown as AnswerRow[]) ?? [], comments: (comments as unknown as CommentRow[]) ?? [] });
   } catch { return fail(null); }
@@ -172,7 +172,7 @@ type ProjectDbRow = {
 export async function loadProjects(): Promise<Loaded<ProjectItem[]>> {
   try {
     const sb = supabaseServer();
-    const r = await withTimeout(sb.from('projects').select('*, profiles(username, country, avatar_url), project_ratings(stars)').order('created_at', { ascending: false }).limit(60));
+    const r = await withTimeout(sb.from('projects').select('*, profiles!author_id(username, country, avatar_url), project_ratings(stars)').order('created_at', { ascending: false }).limit(60));
     if (r.error) return fail([]);
     return ok(((r.data ?? []) as unknown as ProjectDbRow[]).map((p) => {
       const st = (p.project_ratings ?? []).map((x) => x.stars);
