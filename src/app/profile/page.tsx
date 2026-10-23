@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { unsubscribePush } from '@/lib/webpush';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Avatar from '@/components/Avatar';
@@ -228,7 +229,7 @@ export default function ProfilePage() {
         <h2 id="pf-session" className="text-base font-semibold">{t('p.s.session')}</h2>
         <div className="flex flex-wrap items-center gap-4">
           <p className="text-sm text-muted">{t('p.session.p')}</p>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={async () => { await supabaseBrowser().auth.signOut(); router.push('/'); router.refresh(); }}><ILogout />{t('h.logout')}</button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={async () => { await unsubscribePush(); await supabaseBrowser().auth.signOut(); router.push('/'); router.refresh(); }}><ILogout />{t('h.logout')}</button>
         </div>
       </section>
 

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabase';
 
-/** Nombre de notifications non lues de l'utilisateur connecté (rafraîchi toutes les 45 s, au retour sur l'onglet et sur l'événement `adh-notif`). */
+/** Nombre de notifications non lues de l'utilisateur connecté (mis à jour en direct (événement `adh-notif`, émis par NotificationsLive), au retour sur l'onglet et, en secours, toutes les 2 minutes). */
 export function useUnread(uid: string | undefined): number {
   const [n, setN] = useState(0);
   const load = useCallback(async () => {
@@ -15,7 +15,7 @@ export function useUnread(uid: string | undefined): number {
   }, [uid]);
   useEffect(() => {
     load();
-    const id = window.setInterval(load, 45000);
+    const id = window.setInterval(load, 120000);
     const vis = () => { if (document.visibilityState === 'visible') load(); };
     document.addEventListener('visibilitychange', vis);
     window.addEventListener('adh-notif', load);

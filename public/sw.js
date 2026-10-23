@@ -53,3 +53,37 @@ self.addEventListener('fetch', (event) => {
     );
   }
 });
+
+// ---- Web Push : notification reçue site fermé, puis ouverture de la bonne page au clic
+self.addEventListener('push', (event) => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch { /* charge utile illisible */ }
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      // Site ouvert et visible : l'application affiche déjà sa propre alerte, pas de doublon.
+      if (list.some((c) => c.visibilityState === 'visible')) return undefined;
+      return self.registration.showNotification(d.title || 'AfriDevHub', {
+      body: d.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      tag: d.id || undefined,
+      data: { url: d.url || '/notifications' },
+      });
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const raw = (event.notification.data && event.notification.data.url) || '/notifications';
+  const url = new URL(raw, self.location.origin);
+  if (url.origin !== self.location.origin) return; // jamais de redirection externe
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) { c.navigate(url.href).catch(() => {}); return c.focus(); }
+      }
+      return self.clients.openWindow(url.href);
+    }),
+  );
+});

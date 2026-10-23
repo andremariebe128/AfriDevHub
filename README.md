@@ -50,6 +50,7 @@ Créer un projet, puis exécuter **dans cet ordre** dans le SQL Editor :
 5. `supabase/schema-v5.sql` : `spaces` (référentiel pays/techno), `notifications` (triggers), vue `contributors`
 6. `supabase/schema-v6.sql` : correctifs et index
 7. `supabase/schema-v7-securite.sql` : durcissement (privilèges par colonne, vues `profiles_public` / `profiles_me`, commentaires, signalements, blocages, buckets Storage `avatars` / `covers` / `post-images`, fonctions `export_my_data` et `delete_my_account`). **À exécuter après v6.**
+8. `supabase/schema-v8-temps-reel.sql` : active les notifications en temps réel (Supabase Realtime) sur la table `notifications`. **À exécuter après v7.** Si ton projet n'a pas la publication `supabase_realtime`, active Realtime pour la table depuis le tableau de bord (Database > Replication).
 
 Fonction Edge `api` (API mobile et intégrations) : voir `../Flutter/supabase/functions/api` et `API.md`. Déploiement : `supabase functions deploy api`.
 

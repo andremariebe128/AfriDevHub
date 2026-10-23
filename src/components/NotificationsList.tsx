@@ -1,9 +1,10 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { IAward, IChat, IThumb } from '@/components/Icons';
 import { useT } from '@/components/I18n';
 import NotificationRow from '@/components/NotificationRow';
 import { supabaseBrowser } from '@/lib/supabase';
+import { subscribePush } from '@/lib/webpush';
 import { timeAgo } from '@/lib/utils';
 
 type Row = { id: string; type: 'answer' | 'accepted' | 'vote' | 'comment'; question_id: string | null; created_at: string; read_at: string | null;
@@ -14,26 +15,33 @@ export default function NotificationsList() {
   const { t, locale } = useT();
   const [rows, setRows] = useState<Row[] | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const sb = supabaseBrowser();
-      // Attendre que la session soit disponible avant de requêter
-      const { data: sessionData } = await sb.auth.getSession();
-      if (!sessionData.session) {
-        if (!cancelled) setRows([]);
-        return;
-      }
-      const { data, error } = await sb.from('notifications')
-        .select('id, type, question_id, created_at, read_at, actor:profiles!actor_id(username), question:questions(title)')
-        .order('created_at', { ascending: false }).limit(50);
-      if (cancelled) return;
-      if (error) return setRows([]);
-      const list = (data ?? []) as unknown as Row[];
-      setRows(list);
-    })();
-    return () => { cancelled = true; };
+  const load = useCallback(async () => {
+    const sb = supabaseBrowser();
+    // Attendre que la session soit disponible avant de requêter
+    const { data: sessionData } = await sb.auth.getSession();
+    if (!sessionData.session) { setRows([]); return; }
+    const { data, error } = await sb.from('notifications')
+      .select('id, type, question_id, created_at, read_at, actor:profiles!actor_id(username), question:questions(title)')
+      .order('created_at', { ascending: false }).limit(50);
+    if (error) { setRows((r) => r ?? []); return; }
+    setRows((data ?? []) as unknown as Row[]);
   }, []);
+
+  useEffect(() => {
+    load();
+    // Nouvelle notification reçue en direct : on recharge la liste sans quitter la page.
+    window.addEventListener('adh-notif-new', load);
+    return () => window.removeEventListener('adh-notif-new', load);
+  }, [load]);
+
+  const [perm, setPerm] = useState<NotificationPermission | 'none'>('none');
+  useEffect(() => {
+    setPerm('Notification' in window ? Notification.permission : 'none');
+    void subscribePush(); // resynchronise l'abonnement push si les alertes sont déjà autorisées
+  }, []);
+  const askPerm = async () => {
+    try { const p = await Notification.requestPermission(); setPerm(p); if (p === 'granted') void subscribePush(); } catch { /* navigateur sans prise en charge */ }
+  };
 
   const markAll = async () => {
     const now = new Date().toISOString();
@@ -48,11 +56,15 @@ export default function NotificationsList() {
   };
   const unreadCount = (rows ?? []).filter((r) => !r.read_at).length;
 
+  const alerts = perm === 'none' ? null : perm === 'default'
+    ? <button type="button" onClick={askPerm} className="btn btn-secondary btn-sm">{t('notif.enable')}</button>
+    : <p className="text-xs text-subtle">{perm === 'granted' ? t('notif.on') : t('notif.blocked')}</p>;
   if (rows === null) return <p className="mt-5 text-sm text-muted" aria-busy="true">…</p>;
   if (rows.length === 0) return (
     <section className="mt-5 rounded-lg border border-line bg-surface px-5 py-5">
       <h2 className="text-base font-semibold">{t('notif.empty.h')}</h2>
       <p className="mt-1 text-sm text-muted">{t('notif.empty.p')}</p>
+      {alerts && <div className="mt-3">{alerts}</div>}
     </section>
   );
   const icon = { answer: <IChat className="h-4 w-4" />, accepted: <IAward className="h-4 w-4" />, vote: <IThumb className="h-4 w-4" />, comment: <IChat className="h-4 w-4" /> };
@@ -63,6 +75,7 @@ export default function NotificationsList() {
       <p className="text-sm text-muted" aria-live="polite">{unreadCount > 0 ? `${unreadCount} ${t('notif.unread')}` : t('notif.allread')}</p>
       <button type="button" onClick={markAll} disabled={unreadCount === 0} className="btn btn-secondary btn-sm disabled:opacity-50">{t('notif.markall')}</button>
     </div>
+    {alerts && <div className="mt-2">{alerts}</div>}
     <ul aria-label={t('notif.list')} className="mt-3 overflow-hidden rounded-lg border border-line bg-surface">
       {rows.map((r) => (
         <NotificationRow key={r.id} onOpen={() => markOne(r.id)} icon={icon[r.type] ?? icon.answer} n={{ id: r.id, title: `@${r.actor?.username ?? '—'} ${(label[r.type] ?? '')}`, text: r.question?.title,

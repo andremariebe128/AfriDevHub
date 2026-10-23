@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { unsubscribePush } from '@/lib/webpush';
 import { useEffect, useState } from 'react';
 import { useT } from '@/components/I18n';
 import { friendlyError } from '@/lib/errors';
@@ -67,6 +68,7 @@ export default function AccountPanel({ userId }: { userId: string }) {
     }
     const { error } = await sb.rpc('delete_my_account');
     if (error) { setBusy(false); return setMsg({ ok: false, text: friendlyError(error.message, t) }); }
+    await unsubscribePush();
     try { await sb.auth.signOut(); } catch { /* session déjà invalide */ }
     router.push('/');
     router.refresh();

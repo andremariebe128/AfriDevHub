@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import BottomNav from '@/components/BottomNav';
+import NotificationsLive from '@/components/NotificationsLive';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import MainShell from '@/components/MainShell';
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {t('a.skip')}
           </a>
           <PWARegister />
+          <NotificationsLive />
           <Header />
           <MainShell>{children}</MainShell>
           <Footer />

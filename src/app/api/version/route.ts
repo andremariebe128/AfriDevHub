@@ -26,11 +26,15 @@ export function GET(req: Request) {
   const min = VERSION_RE.test(process.env.MIN_VERSION ?? '') ? (process.env.MIN_VERSION as string) : '';
   const known = VERSION_RE.test(current);
   const notes = (process.env.RELEASE_NOTES ?? '').slice(0, 300);
+  // Lien direct (APK, installateur…) défini par plateforme ; à défaut, la page de téléchargement.
+  const platform = (url.searchParams.get('platform') ?? '').toLowerCase();
+  const direct = { android: process.env.DL_ANDROID, windows: process.env.DL_WINDOWS, macos: process.env.DL_MACOS, ios: process.env.DL_IOS, linux: process.env.DL_LINUX }[platform as 'android'];
+  const downloadUrl = direct && /^https:\/\//.test(direct) ? direct : `${url.origin}/download`;
   const body = {
     latestVersion: latest,
     updateAvailable: known && cmp(latest, current) > 0,
     forceUpdate: known && min !== '' && cmp(min, current) > 0,
-    downloadUrl: `${url.origin}/download`,
+    downloadUrl,
     releaseNotes: notes || null,
   };
   return NextResponse.json(body, { headers: { 'Cache-Control': 'public, max-age=300', 'X-Content-Type-Options': 'nosniff' } });

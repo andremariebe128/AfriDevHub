@@ -31,6 +31,8 @@
 ## Examiné sans rien trouver
 XSS (le Markdown ignore le HTML brut, filtre liens et images ; seul `ThemeScript` utilise `dangerouslySetInnerHTML`, avec un nonce), redirections ouvertes (`safeNext` côté web et Flutter), contournement du proxy par encodage de chemin, CSP et en-têtes, service worker (aucune page privée en cache), secrets (seules des clés `anon`, publiques par conception), injection dans les filtres PostgREST, fonctions `security definer` (toutes avec `search_path` fixé, exécution retirée à `anon`), cache et file d'attente hors ligne Flutter (liés à l'identifiant du compte, vidés à la déconnexion), liens et images externes dans l'app (schémas et origines filtrés), configuration Android (`allowBackup` et trafic en clair désactivés).
 
+Notifications en temps réel (v8) : Realtime ne diffuse que les lignes que la politique RLS autorise (`user_id = auth.uid()`), le canal est de plus filtré côté client sur l'identifiant de l'utilisateur. Aucune donnée d'un autre compte ne transite.
+
 ## Limites connues (acceptées)
 - Le blocage d'un membre masque son contenu côté application ; il n'est pas appliqué par la base (il n'existe pas de messagerie privée à protéger).
 - Les signalements sont consultables seulement via le tableau de bord Supabase (pas d'interface de modération).
