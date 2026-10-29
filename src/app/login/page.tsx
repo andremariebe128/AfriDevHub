@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { Field } from '@/components/Field';
@@ -68,8 +67,7 @@ function Rule({ ok, children }: { ok: boolean; children: React.ReactNode }) {
 }
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { t } = useT();
+    const { t } = useT();
   const [signup, setSignup] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,10 +84,19 @@ export default function LoginPage() {
   const submitWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    supabaseBrowser().auth.getSession().then(({ data }) => {
+    const sb = supabaseBrowser();
+    sb.auth.getSession().then(({ data }) => {
       const u = data.session?.user;
       if (u) setMe((u.user_metadata?.username as string | undefined) ?? u.email ?? '');
     }).catch(() => {});
+    // Retour du lien de confirmation par e-mail (?code=…) : la session vient d'être créée => on entre directement.
+    const { data: sub } = sb.auth.onAuthStateChange((ev, session) => {
+      const p = new URLSearchParams(window.location.search);
+      if (ev === 'SIGNED_IN' && session && (p.has('code') || window.location.hash.includes('access_token'))) {
+        window.location.assign(safeNext(p.get('next')));
+      }
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   /* v8 : ombre portee dynamique qui suit la souris */
@@ -146,8 +153,8 @@ export default function LoginPage() {
       setBusy(false);
       if (err) return setError(friendlyError(err.message, t));
     }
-    router.push(safeNext(new URLSearchParams(window.location.search).get('next')));
-    router.refresh();
+    // Navigation complète : la session (cookie) est alors lue par le serveur dès la première requête.
+    window.location.assign(safeNext(new URLSearchParams(window.location.search).get('next')));
   }
 
   async function forgot() {

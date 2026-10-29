@@ -43,3 +43,17 @@ Notifications en temps réel (v8) : Realtime ne diffuse que les lignes que la po
 2. Déployer : `supabase functions deploy api`. Secret facultatif : `ALLOWED_ORIGINS` (domaines du site web, séparés par des virgules).
 3. Authentication : confirmation d'e-mail activée, longueur minimale du mot de passe ≥ 8, protection contre les mots de passe compromis activée, limites de débit vérifiées, URL de redirection limitées à vos domaines, CAPTCHA activé si possible.
 4. Vérifier qu'aucune clé `service_role` n'est présente dans le web ni dans l'app.
+
+## Correspondance OWASP Top 10:2025
+| Catégorie | Mesures |
+|---|---|
+| A01 Contrôle d'accès | RLS sur toutes les tables, privilèges par colonne, fonctions `security definer` réservées aux connectés, tables push sans accès direct |
+| A02 Mauvaise configuration | CSP à nonce, HSTS, X-Frame-Options, COOP, Permissions-Policy, `poweredByHeader` coupé, fonction `push` fermée par secret partagé |
+| A03 Chaîne d'approvisionnement | `npm audit` à 0 vulnérabilité (Next 16.4.3), dépendances épinglées, import `npm:web-push@3.6.7` en version exacte |
+| A04 Cryptographie | HTTPS forcé, VAPID/JWT RS256 pour FCM, secrets uniquement dans Supabase/Vercel, comparaison du secret en temps constant |
+| A05 Injection | requêtes paramétrées (PostgREST/RPC), contraintes CHECK, aucun `innerHTML` utilisateur |
+| A06 Conception | limite de 10 abonnements push par compte, quotas de stockage, bio/CV privés par défaut |
+| A07 Authentification | mots de passe contrôlés, réinitialisation sans fuite d'existence du compte, pseudos réservés |
+| A08 Intégrité | service worker non mis en cache, redirections `next` filtrées (`safeNext`), clic de notification limité à la même origine |
+| A09 Journalisation | journaux Supabase (Edge Functions, webhooks) ; à surveiller : 401 répétés sur `push` |
+| A10 Conditions exceptionnelles | `error.tsx` neutre, échecs push/FCM sans effet sur l'inscription, suppression de compte tolérante, anti-SSRF sur les endpoints push (liste blanche SQL + fonction) |

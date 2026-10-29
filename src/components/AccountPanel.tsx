@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { unsubscribePush } from '@/lib/webpush';
 import { useEffect, useState } from 'react';
 import { useT } from '@/components/I18n';
-import { friendlyError } from '@/lib/errors';
+import { friendlyError, withDetail } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 
 type Blocked = { id: string; username: string };
@@ -67,11 +67,10 @@ export default function AccountPanel({ userId }: { userId: string }) {
       } catch { /* meilleur effort */ }
     }
     const { error } = await sb.rpc('delete_my_account');
-    if (error) { setBusy(false); return setMsg({ ok: false, text: friendlyError(error.message, t) }); }
+    if (error) { setBusy(false); return setMsg({ ok: false, text: withDetail(friendlyError(error.message, t), error) }); }
     await unsubscribePush();
     try { await sb.auth.signOut(); } catch { /* session déjà invalide */ }
-    router.push('/');
-    router.refresh();
+    window.location.assign('/');
   }
 
   return (

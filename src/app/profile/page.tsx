@@ -16,7 +16,7 @@ import { IAlert, IArrow, ILogout, IOk } from '@/components/Icons';
 import Switch from '@/components/Switch';
 import { canonicalCountry } from '@/lib/countries';
 import { normalizeCv, type CvEntry } from '@/lib/cv';
-import { friendlyError } from '@/lib/errors';
+import { friendlyError, withDetail } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 import { parseTags, safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
@@ -72,7 +72,7 @@ export default function ProfilePage() {
       try {
         const res = await Promise.race([
           sb.from('profiles_me').select('username, full_name, country, headline, bio, stack, languages, years_exp, open_to, github_url, website_url, avatar_url, bio_public, cv, cv_public').single(),
-          new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 3500)),
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 9000)),
         ]);
         if (!alive) return;
         const data = res.data;
@@ -109,6 +109,7 @@ export default function ProfilePage() {
     setTouched(true);
     if (!/^[a-zA-Z0-9_.-]{3,}$/.test(f.username.trim())) return setMsg({ ok: false, text: t('err.user') });
     if (!isUrl(f.github_url) || !isUrl(f.website_url)) return setMsg({ ok: false, text: t('err.url') });
+    if (loadFail) return setMsg({ ok: false, text: t('p.loadfail') }); // jamais d'écrasement avec un formulaire vide
     const years = f.years_exp.trim() === '' ? null : Math.min(60, Math.max(0, parseInt(f.years_exp, 10) || 0));
     setBusy(true);
     const base = {
@@ -117,9 +118,15 @@ export default function ProfilePage() {
       github_url: safeUrl(f.github_url), website_url: safeUrl(f.website_url),
       languages: parseTags(langs.join(',')), years_exp: years, open_to: open,
     };
-    const { error } = await supabaseBrowser().from('profiles').update({ ...base, bio_public: bioPublic, cv, cv_public: cvPublic }).eq('id', userId);
+    const sb = supabaseBrowser();
+    const { data: upd, error } = await sb.from('profiles').update({ ...base, bio_public: bioPublic, cv, cv_public: cvPublic }).eq('id', userId).select('id');
     setBusy(false);
-    setMsg(error ? { ok: false, text: error.code === '23505' ? t('err.taken') : friendlyError(error.message, t) } : { ok: true, text: t('p.saved') });
+    if (error) return setMsg({ ok: false, text: error.code === '23505' ? t('err.taken') : error.code === '23514' ? withDetail(t('err.generic'), error) : withDetail(friendlyError(error.message, t), error) });
+    // Aucune ligne modifiée = profil introuvable ou accès refusé (et non un succès silencieux).
+    if (!upd || upd.length === 0) return setMsg({ ok: false, text: withDetail(t('err.generic'), { message: 'profil introuvable ou accès refusé', code: 'RLS' }) });
+    // Garde le pseudo des métadonnées de session identique à celui du profil (en-tête, page de connexion).
+    try { await sb.auth.updateUser({ data: { username: base.username } }); } catch { /* sans gravité */ }
+    setMsg({ ok: true, text: t('p.saved') });
   }
 
   if (!ready) return <FormSkeleton narrow />;

@@ -33,3 +33,10 @@ export function storageError(err: Err, t: (k: Key) => string): string {
   if (isDenied(err)) return t('err.denied');
   return friendlyError(err?.message ?? '', t);
 }
+
+/** Détail technique court (code + message Supabase) ajouté sous le message convivial : sert au diagnostic. */
+export function withDetail(friendly: string, err: { message?: string; code?: string } | null | undefined): string {
+  const m = (err?.message ?? '').replace(/\s+/g, ' ').trim().slice(0, 160);
+  if (!m) return friendly;
+  return `${friendly} (${err?.code ? err.code + ' · ' : ''}${m})`;
+}
