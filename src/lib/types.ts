@@ -7,7 +7,7 @@ export type QuestionRow = {
   accepted_answer_id: string | null;
   created_at: string;
   updated_at?: string | null;
-  profiles: { username: string; country: string | null; avatar_url?: string | null } | null;
+  profiles: { username: string; country: string | null; avatar_url?: string | null; verified_until?: string | null } | null;
   answers?: { count: number }[];
   votes?: number;
   views?: number;
@@ -20,7 +20,7 @@ export type AnswerRow = {
   score: number;
   created_at: string;
   updated_at?: string | null;
-  profiles: { username: string; avatar_url?: string | null } | null;
+  profiles: { username: string; avatar_url?: string | null; verified_until?: string | null } | null;
 };
 
 export type CommentRow = {
@@ -30,11 +30,12 @@ export type CommentRow = {
   author_id: string;
   body: string;
   created_at: string;
-  profiles: { username: string; avatar_url?: string | null } | null;
+  profiles: { username: string; avatar_url?: string | null; verified_until?: string | null } | null;
 };
 
 export type ProfileRow = {
   id: string;
+  verified_until?: string | null;
   username: string;
   full_name: string | null;
   country: string | null;

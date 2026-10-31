@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import Avatar from '@/components/Avatar';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { useT } from '@/components/I18n';
 import { IAlert, IDown, ISolved, IUp } from '@/components/Icons';
 import ImageInsert from '@/components/ImageInsert';
@@ -150,10 +151,11 @@ export default function AnswerSection({ questionId, questionAuthorId, acceptedAn
     setCms((x) => x.filter((y) => y.id !== c.id));
   }
 
-  const Who = ({ p, at, edited }: { p: { username: string; avatar_url?: string | null } | null; at: string; edited?: boolean }) => (
+  const Who = ({ p, at, edited }: { p: { username: string; avatar_url?: string | null; verified_until?: string | null } | null; at: string; edited?: boolean }) => (
     <span className="flex flex-wrap items-center gap-1.5 text-xs text-subtle">
       {p?.username && <Avatar name={p.username} src={p.avatar_url} size={20} className="!ring-0" />}
       {p?.username ? <Link href={`/u/${encodeURIComponent(p.username)}`} className="font-medium text-muted hover:text-accent-fg">@{p.username}</Link> : <span>@{t('anon')}</span>}
+      <VerifiedBadge until={p?.verified_until} label={t('news.verified')} />
       <span aria-hidden="true">·</span><span>{timeAgo(at, locale)}</span>
       {edited && <><span aria-hidden="true">·</span><span>{t('edited')}</span></>}
     </span>

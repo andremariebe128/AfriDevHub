@@ -1,3 +1,4 @@
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getT } from '@/lib/i18n-server';
@@ -36,7 +37,7 @@ export default async function QuestionPage({ params }: Props) {
       <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl">{question.title}</h1>
       <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
         <Avatar name={user} src={question.profiles?.avatar_url} size={28} />
-        <span className="font-semibold text-muted">@{user ?? t('anon')}</span>
+        <span className="font-semibold text-muted">@{user ?? t('anon')}</span><VerifiedBadge until={question.profiles?.verified_until} label={t('news.verified')} />
         {country && <Flag country={country} className="h-3.5 w-auto" />}
         {country && <span>{countryName(country, locale)}</span>}
         <span aria-hidden="true">·</span>

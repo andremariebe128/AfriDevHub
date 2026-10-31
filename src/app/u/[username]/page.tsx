@@ -1,3 +1,4 @@
+import VerifiedBadge from '@/components/VerifiedBadge';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Avatar from '@/components/Avatar';
@@ -43,7 +44,7 @@ export default async function PublicProfile({ params }: Props) {
         <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-bold">{p.full_name || `@${p.username}`}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-subtle">
-            <span className="font-mono">@{p.username}</span>
+            <span className="font-mono">@{p.username}</span><VerifiedBadge until={p.verified_until} label={t('news.verified')} />
             {p.country && <><span aria-hidden="true">·</span><Flag country={p.country} className="h-3.5 w-auto" /><span>{countryName(p.country, locale)}</span></>}
             {p.years_exp != null && <><span aria-hidden="true">·</span><span>{p.years_exp} {t('u.exp')}</span></>}
           </p>

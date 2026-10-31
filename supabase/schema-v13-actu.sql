@@ -9,7 +9,7 @@ alter table public.profiles add column if not exists verified_until timestamptz;
 grant select (verified_until) on public.profiles to anon, authenticated;
 
 -- ------------------------------------------------------------------ 2. Droit de publier
-create or replace function public.news_min_rep() returns int language sql immutable as $$ select 15 $$;
+create or replace function public.news_min_rep() returns int language sql immutable as $$ select 20 $$;
 
 create or replace function public.news_rep(uid uuid) returns int
 language sql stable set search_path = public as $$

@@ -153,11 +153,11 @@ export async function loadQuestions(opts: { q?: string; tag?: string; country?: 
 export async function loadQuestion(id: string): Promise<Loaded<{ question: QuestionRow; answers: AnswerRow[]; comments: CommentRow[] } | null>> {
   try {
     const sb = supabaseServer();
-    const { data: q, error } = await withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url)').eq('id', id).maybeSingle());
+    const { data: q, error } = await withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url, verified_until)').eq('id', id).maybeSingle());
     if (error) return fail(null);
     if (!q) return ok(null);
-    const { data: answers } = await withTimeout(sb.from('answers').select('*, profiles!author_id(username, avatar_url)').eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true }));
-    const { data: comments } = await withTimeout(sb.from('comments').select('*, profiles(username, avatar_url)').eq('question_id', id).order('created_at', { ascending: true }).limit(300));
+    const { data: answers } = await withTimeout(sb.from('answers').select('*, profiles!author_id(username, avatar_url, verified_until)').eq('question_id', id).order('score', { ascending: false }).order('created_at', { ascending: true }));
+    const { data: comments } = await withTimeout(sb.from('comments').select('*, profiles(username, avatar_url, verified_until)').eq('question_id', id).order('created_at', { ascending: true }).limit(300));
     return ok({ question: q as unknown as QuestionRow, answers: (answers as unknown as AnswerRow[]) ?? [], comments: (comments as unknown as CommentRow[]) ?? [] });
   } catch { return fail(null); }
 }
@@ -205,10 +205,11 @@ export async function loadProfile(username: string): Promise<Loaded<ProfileView 
     const { data: p, error } = await withTimeout(sb.from('profiles_public').select(PUBLIC_PROFILE_COLS).eq('username', username).maybeSingle());
     if (error) return fail(null);
     if (!p) return ok(null);
-    const [{ data: qs }, { data: pjs }, { data: ans }] = await Promise.all([
-      withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url), answers!answers_question_id_fkey(count)').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
+    const [{ data: qs }, { data: pjs }, { data: ans }, { data: vf }] = await Promise.all([
+      withTimeout(sb.from('questions').select('*, profiles(username, country, avatar_url, verified_until), answers!answers_question_id_fkey(count)').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
       withTimeout(sb.from('projects').select('id, title, url, tags').eq('author_id', p.id).order('created_at', { ascending: false }).limit(10)),
       withTimeout(sb.from('answers').select('score').eq('author_id', p.id)),
+      withTimeout(sb.from('profiles').select('verified_until').eq('id', p.id).maybeSingle()),
     ]);
     const rep = (ans ?? []).reduce((n: number, a: { score?: number }) => n + (a.score ?? 0), 0) + (ans?.length ?? 0) * 5;
 
@@ -216,7 +217,7 @@ export async function loadProfile(username: string): Promise<Loaded<ProfileView 
        (sinon NULL) ; le contenu masqué n'atteint donc jamais le serveur Next.js, encore moins le navigateur d'un visiteur. */
     const row = p as unknown as ProfileRow;
     const cv = normalizeCv(row.cv);
-    const profile: ProfileRow = { ...row, cv: undefined, avatar_url: safeUrl(row.avatar_url), github_url: safeUrl(row.github_url), website_url: safeUrl(row.website_url) };
+    const profile: ProfileRow = { ...row, verified_until: (vf as { verified_until?: string | null } | null)?.verified_until ?? null, cv: undefined, avatar_url: safeUrl(row.avatar_url), github_url: safeUrl(row.github_url), website_url: safeUrl(row.website_url) };
     return ok({
       profile,
       questions: (qs as unknown as QuestionRow[]) ?? [],
