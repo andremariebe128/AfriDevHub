@@ -8,6 +8,7 @@ import { getT } from '@/lib/i18n-server';
 import type { Key } from '@/lib/i18n';
 
 const COL1: { href: string; label: Key }[] = [
+  { href: '/actu', label: 'nav.news' },
   { href: '/questions', label: 'nav.q' },
   { href: '/projects', label: 'nav.p' },
   { href: '/espaces', label: 'nav.s' },

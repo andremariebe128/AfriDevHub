@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useT } from '@/components/I18n';
-import { IBell, IBriefcase, IChat, IFolder, IGlobe, IHome, IMentor, IPlus, IUser, IX } from '@/components/Icons';
+import { IBell, IBriefcase, IChat, IFolder, IGlobe, INews, IMentor, IPlus, IUser, IX } from '@/components/Icons';
 import { Badge, useUnread } from '@/components/useUnread';
 import { supabaseBrowser } from '@/lib/supabase';
 import type { Key } from '@/lib/i18n';
 
-type Item = { href: string; label: Key; Icon: typeof IHome };
+type Item = { href: string; label: Key; Icon: typeof INews };
 const LEFT: Item[] = [
-  { href: '/', label: 'nav.home', Icon: IHome },
+  { href: '/actu', label: 'nav.news', Icon: INews },
   { href: '/questions', label: 'nav.q', Icon: IChat },
 ];
 const MORE: Item[] = [

@@ -69,7 +69,7 @@ export function plainPreview(md: string, max = 170): string {
  * Chemin interne sûr pour une redirection après connexion (paramètre `next`), sinon `fallback`.
  * Refuse tout ce qui n'est pas un chemin du site : `//hote`, `/\hote`, `https://…`, `javascript:`, caractères de contrôle.
  */
-export function safeNext(raw: string | null | undefined, fallback = '/questions'): string {
+export function safeNext(raw: string | null | undefined, fallback = '/actu'): string {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//') || /[\\\u0000-\u001f\u007f]/.test(raw)) return fallback;
   try {
     const u = new URL(raw, 'http://interne.invalid');

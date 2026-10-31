@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'AfriDevHub',
     short_name: 'AfriDevHub',
     description: "La communauté des développeurs africains : apprendre, partager, collaborer.",
-    start_url: '/questions',
+    start_url: '/actu',
     scope: '/',
     display: 'standalone',
     orientation: 'portrait',

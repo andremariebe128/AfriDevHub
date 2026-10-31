@@ -1,0 +1,62 @@
+/** Domaines autorisés pour les liens d'une actu (liste blanche). Identique à public.news_allowed_hosts() en SQL. */
+export const NEWS_HOSTS: readonly string[] = [
+  'github.com',
+  'gitlab.com',
+  'dev.to',
+  'medium.com',
+  'hashnode.com',
+  'hashnode.dev',
+  'stackoverflow.com',
+  'stackexchange.com',
+  'developer.mozilla.org',
+  'docs.flutter.dev',
+  'flutter.dev',
+  'dart.dev',
+  'pub.dev',
+  'nextjs.org',
+  'react.dev',
+  'vercel.com',
+  'supabase.com',
+  'nodejs.org',
+  'python.org',
+  'php.net',
+  'laravel.com',
+  'kaggle.com',
+  'zindi.africa',
+  'arxiv.org',
+  'huggingface.co',
+  'youtube.com',
+  'youtu.be',
+  'news.ycombinator.com',
+  'techcabal.com',
+  'techpoint.africa',
+  'disrupt-africa.com',
+  'wearetech.africa',
+  'developers.google.com',
+  'android-developers.googleblog.com',
+  'blog.google',
+  'cloud.google.com',
+  'firebase.google.com',
+  'microsoft.com',
+  'learn.microsoft.com',
+  'aws.amazon.com',
+  'cloudflare.com',
+  'openai.com',
+  'anthropic.com',
+  'linkedin.com',
+  'smashingmagazine.com',
+  'css-tricks.com',
+  'web.dev',
+  'owasp.org',
+  'mozilla.org',
+  'kotlinlang.org',
+  'rust-lang.org',
+  'go.dev'
+];
+
+/** Valide un lien d'actu : HTTPS, sans identifiants ni port, domaine (ou sous-domaine) de la liste blanche. */
+export function newsLinkOk(raw: string): boolean {
+  if (raw.length > 500 || !/^https:\/\/([a-z0-9-]+\.)+[a-z]{2,}(\/[^\s<>"']*)?$/i.test(raw)) return false;
+  const host = /^https:\/\/([^/]+)/i.exec(raw)![1].toLowerCase();
+  return NEWS_HOSTS.some((d) => host === d || host.endsWith('.' + d));
+}

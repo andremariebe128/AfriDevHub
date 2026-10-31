@@ -284,3 +284,9 @@ URL publique testée sur mobile · dépôt propre avec ce README et la licence �
 3. Lire le règlement CADEV et trancher les points du §14.
 4. Créer le projet Flutter (`flutter create afridevhub_app --platforms=android,windows`), brancher `supabase_flutter`, faire la connexion.
 5. Démarrer F-40 (page d'un espace) dès que le site est en ligne.
+
+## Actu Dev (schema-v13)
+1. SQL Editor → exécuter `supabase/schema-v13-actu.sql` (une seule fois, ne pas rejouer v7 ensuite).
+2. Realtime : les tables `news_posts` et `news_messages` sont ajoutées à la publication automatiquement.
+3. Redéployer sur Vercel (nouvelle route `/api/link-preview`, aucune nouvelle variable d'environnement).
+4. Donner le badge vérifié : `update public.profiles set verified_until = now() + interval '30 days' where username = 'pseudo';`

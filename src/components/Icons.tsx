@@ -1,5 +1,5 @@
 import {
-  ArrowBigUp, ArrowRight, Bold, Braces, CircleAlert, CircleCheck, Eye, EyeOff, Lightbulb, Link2, LogOut, ThumbsUp, X,
+  BadgeCheck, Newspaper, SendHorizontal, ArrowBigUp, ArrowRight, Bold, Braces, CircleAlert, CircleCheck, Eye, EyeOff, Lightbulb, Link2, LogOut, ThumbsUp, X,
   MessageSquareReply, Award, Bell, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CloudOff, Code, Command, Compass, Download,
   ExternalLink, FolderGit2, Globe, Handshake, Heart, House, Inbox, Languages, Leaf, MapPin, MessageCircle, Monitor, Moon, Plus, Rocket,
   Briefcase, CalendarDays, Camera, GraduationCap, Lock, Trash2, Upload,
@@ -82,3 +82,7 @@ export const IHeart = ({ className, on }: P & { on?: boolean }) => (
 export const IStar = ({ className, on }: P & { on?: boolean }) => (
   <Star className={className ?? 'h-5 w-5'} fill={on ? 'currentColor' : 'none'} aria-hidden="true" />
 );
+
+export const IVerified = make(BadgeCheck, 'h-4 w-4');
+export const INews = make(Newspaper, 'h-6 w-6');
+export const ISend = make(SendHorizontal, 'h-5 w-5');

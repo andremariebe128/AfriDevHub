@@ -17,6 +17,7 @@ import { safeUrl } from '@/lib/utils';
 import type { Key } from '@/lib/i18n';
 
 const NAV: { href: string; label: Key }[] = [
+  { href: '/actu', label: 'nav.news' },
   { href: '/questions', label: 'nav.q' },
   { href: '/projects', label: 'nav.p' },
   { href: '/espaces', label: 'nav.s' },

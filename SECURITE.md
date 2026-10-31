@@ -57,3 +57,16 @@ Notifications en temps réel (v8) : Realtime ne diffuse que les lignes que la po
 | A08 Intégrité | service worker non mis en cache, redirections `next` filtrées (`safeNext`), clic de notification limité à la même origine |
 | A09 Journalisation | journaux Supabase (Edge Functions, webhooks) ; à surveiller : 401 répétés sur `push` |
 | A10 Conditions exceptionnelles | `error.tsx` neutre, échecs push/FCM sans effet sur l'inscription, suppression de compte tolérante, anti-SSRF sur les endpoints push (liste blanche SQL + fonction) |
+
+## Alertes de l'Advisor Supabase (v12)
+- `profiles_public` et `profiles_me` : vues **volontairement** en « security definer » (l'alerte ERROR est attendue). Les colonnes privées `bio` et `cv` ne sont pas lisibles directement (privilèges par colonne, v7) ; ces vues ne les exposent que si le membre les a rendues publiques, ou à lui-même.
+- `delete_my_account`, `export_my_data`, `register_*`/`unregister_*` : fonctions appelables par les connectés **par conception** (elles utilisent `auth.uid()` et refusent les anonymes). Alerte attendue.
+- « Leaked password protection » : à activer dans le tableau de bord (Authentication → Sign In / Providers → Password), selon le plan Supabase.
+
+## Actu Dev (v13)
+- **Qui publie** : `can_post_news()` côté base (RLS) — réputation ≥ 15 ou compte vérifié (`profiles.verified_until` dans le futur). Aucun contrôle uniquement côté interface.
+- **Messages** : réservés aux connectés ; chacun modifie/supprime uniquement les siens (suppression définitive) ; limites 5 actus/jour et 30 messages/minute ; signalement possible (`news_post`, `news_message`).
+- **Liens** : HTTPS uniquement, sans identifiants ni port, domaine dans une liste blanche (identique en SQL, TypeScript et Dart).
+- **Aperçu de lien (anti-SSRF, OWASP A10)** : route `/api/link-preview` authentifiée (jeton Bearer), 15 requêtes/min, DNS épinglé, adresses privées/locales refusées, ≤ 3 redirections revalidées, 300 Ko max, 4 s, sortie en texte brut. Limite connue : titre/description de l'aperçu sont transmis par le client ; ils restent affichés en texte simple et seulement pour un lien de la liste blanche.
+- **Compte vérifié** : géré par un administrateur (SQL). Le paiement de l'abonnement n'est pas encore branché.
+- **Ne pas rejouer schema-v7 après v13** (il retire des droits de colonnes sur `profiles`).

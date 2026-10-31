@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 /** Pages ouvertes sans connexion (chemins normalisés : minuscules, sans slash final). */
-const PUBLIC = new Set(['/', '/login', '/reset', '/download', '/conditions', '/mentions-legales', '/confidentialite', '/api/version']);
+const PUBLIC = new Set(['/', '/login', '/reset', '/download', '/conditions', '/mentions-legales', '/confidentialite', '/api/version', '/api/link-preview']); // /api/link-preview : le jeton Bearer est vérifié par la route elle-même
 
 /** Chemin canonique pour la comparaison : décodé, `//` réduits, sans slash final, en minuscules. */
 function canonical(pathname: string): string | null {

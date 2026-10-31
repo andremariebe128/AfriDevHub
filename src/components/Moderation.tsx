@@ -5,7 +5,7 @@ import { IAlert, IOk } from '@/components/Icons';
 import { friendlyError } from '@/lib/errors';
 import { supabaseBrowser } from '@/lib/supabase';
 
-export type TargetType = 'question' | 'answer' | 'comment' | 'user' | 'project' | 'listing';
+export type TargetType = 'question' | 'answer' | 'comment' | 'user' | 'project' | 'listing' | 'news_post' | 'news_message';
 const REASONS = ['spam', 'abuse', 'offtopic', 'scam', 'other'] as const;
 
 /** Formulaire de signalement en ligne : motif + précisions facultatives, envoyé dans la table `reports`. */
